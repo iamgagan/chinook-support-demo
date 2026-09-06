@@ -50,6 +50,51 @@
   a case can assert that `exclude_owned=True` was actually set rather than trusting that the
   returned tracks happened not to be owned.
 
+## Observed while rehearsing in Studio
+
+These came out of driving the real Studio UI end to end, not from reading docs. All three are
+reproducible against `langgraph dev` 0.13.4 with `langgraph-api` in-memory runtime 0.33.4.
+
+- **Runtime context is not discoverable in the default input panel.** The graph declares
+  `context_schema=CustomerContext`, and the server correctly advertises
+  `{"customer_id": {"type": "integer"}, "required": ["customer_id"]}` on
+  `GET /assistants/{id}/schemas`. Studio's Input panel still shows only `Messages`, so there is no
+  obvious place to supply the one field the graph cannot run without. The workaround that actually
+  works is to create named assistants that carry the context: `support — customer 1` and
+  `support — customer 2`. That turned out to be better than the documented per-run context anyway,
+  because context then persists across runs *and* resumes, removing the most likely live-demo
+  mistake of forgetting to re-supply identity when approving an interrupt.
+
+- **A human-in-the-loop interrupt offers a raw JSON box instead of the decisions it just declared.**
+  The interrupt payload contains `review_configs[0].allowed_decisions: ["approve", "reject"]`, so
+  the server knows there are exactly two valid answers. Studio renders a free-text JSON/YAML editor
+  and expects the operator to hand-write `{"decisions": [{"type": "approve"}]}`. For a middleware
+  whose entire purpose is a safe two-choice gate, hand-authoring the resume payload is more error
+  surface than the gate itself.
+
+- **A malformed resume permanently corrupts the thread.** The resume editor is pre-filled with the
+  literal `""`. Submitting that reaches `HumanInTheLoopMiddleware` as a string, which then indexes
+  it by key and raises `TypeError: string indices must be integers, not 'str'`. The failure is
+  written into the checkpoint, so every subsequent resume on that thread replays the same error —
+  including a correctly formed `{"decisions": [...]}` payload sent afterwards over the HTTP API.
+  The thread is unrecoverable and the run has to be restarted in a new thread. A resume value that
+  does not match the interrupt's declared schema should be rejected at the boundary, before it is
+  persisted. This cost real rehearsal time and is the single thing most likely to derail a live
+  demo, which is why the terminal fallback (`scripts/chat.py`, which prompts for approve/reject
+  with no JSON) is worth keeping rehearsed.
+
+- **Interrupts are surfaced with a red `Error` badge.** `GraphInterrupt` is an exception that
+  unwinds the graph, so Studio labels a healthy, expected pause the same way it labels a failure.
+  Worth narrating during a demo, or the audience reads a working approval gate as a crash.
+
+- **Thread-to-customer binding is enforced, and it surfaces as a raw traceback.** Switching the
+  assistant from customer 1 to customer 2 inside an existing thread raises
+  `PermissionError("This conversation belongs to another customer. Start a new thread.")` from
+  `db.bind_thread`. This is the intended control and it is the strongest isolation evidence in the
+  demo: the run dies in `before_agent`, so the model is never invoked, the trace records ~5 ms and
+  zero tokens, and there is no prompt to jailbreak. It still reaches the operator as an unformatted
+  Python error rather than an explanation, so it needs framing before it is shown.
+
 ## Remaining evidence
 
 A live model conversation, live Studio review interactions, observed model failure, measured evaluation comparison, annotation review, and a timed rehearsal require working model and LangSmith access. Scripted-model tests validate control flow and data boundaries; they do not substitute for those live requirements.
