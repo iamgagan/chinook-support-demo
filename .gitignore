@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.pyc
+.langgraph_api/
+data/*.sqlite*
+artifacts/
+.DS_Store

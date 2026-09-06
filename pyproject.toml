@@ -1,0 +1,20 @@
+[project]
+name = "chinook-support"
+version = "0.1.0"
+description = "A customer-isolated music store support agent for LangSmith Studio"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "langchain>=1.2,<2",
+  "langchain-openai>=1.1,<2",
+  "langgraph>=1.0,<2",
+  "langgraph-cli[inmem]>=0.4,<1",
+  "langsmith>=0.4,<1",
+  "python-dotenv>=1.1,<2",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/chinook_support"]
