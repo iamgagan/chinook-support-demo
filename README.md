@@ -142,6 +142,7 @@ Two evaluators run on every case. The deterministic `scenario_check` measures gr
 
 ## Deliverables and next steps
 
+- [Original assignment, transcribed](docs/ASSIGNMENT.md)
 - [Approved plan](PLAN.md)
 - [Demo runbook, Q&A, and Slack draft](docs/DEMO.md)
 - [Friction and verification log](docs/FRICTION.md)
