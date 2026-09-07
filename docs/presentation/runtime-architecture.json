@@ -1,0 +1,430 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Chinook Support Agent — Runtime Architecture",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1395,
+      540
+    ],
+    "repository": {
+      "url": "https://github.com/iamgagan/chinook-support-demo",
+      "revision": "b65e28fe54ede08c7488b2a6360b2f5ff94a6238"
+    },
+    "views": [
+      {
+        "id": "primary-path",
+        "label": "Primary request path",
+        "focus": [
+          "studio",
+          "server",
+          "boundary",
+          "agent",
+          "tools",
+          "databoundary",
+          "chinook"
+        ],
+        "note": "One operator turn from Studio to a read-only catalog query."
+      },
+      {
+        "id": "identity",
+        "label": "Customer isolation",
+        "focus": [
+          "boundary",
+          "agent",
+          "tools",
+          "databoundary",
+          "support"
+        ],
+        "note": "Where identity is established, revalidated, and enforced in SQL."
+      },
+      {
+        "id": "write-path",
+        "label": "Approved write path",
+        "focus": [
+          "agent",
+          "hitl",
+          "tools",
+          "databoundary",
+          "support"
+        ],
+        "note": "The only path that mutates state, and the gate in front of it."
+      },
+      {
+        "id": "external",
+        "label": "External dependencies",
+        "focus": [
+          "studio",
+          "model",
+          "langsmith",
+          "server"
+        ],
+        "note": "Everything that leaves the local host."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "studio",
+      "type": "frontend",
+      "label": "LangSmith Studio",
+      "sublabel": "operator UI",
+      "tag": "simulated auth",
+      "pos": [
+        35,
+        55
+      ],
+      "size": [
+        145,
+        66
+      ]
+    },
+    {
+      "id": "langsmith",
+      "type": "cloud",
+      "label": "LangSmith Cloud",
+      "sublabel": "traces · evals",
+      "pos": [
+        265,
+        55
+      ],
+      "size": [
+        155,
+        66
+      ]
+    },
+    {
+      "id": "model",
+      "type": "external",
+      "label": "OpenAI",
+      "sublabel": "gpt-5.6",
+      "pos": [
+        505,
+        55
+      ],
+      "size": [
+        150,
+        66
+      ]
+    },
+    {
+      "id": "server",
+      "type": "backend",
+      "label": "Agent Server",
+      "sublabel": "langgraph :2024",
+      "pos": [
+        35,
+        240
+      ],
+      "size": [
+        145,
+        66
+      ],
+      "sources": [
+        {
+          "path": "langgraph.json",
+          "label": "graph registration"
+        }
+      ]
+    },
+    {
+      "id": "boundary",
+      "type": "security",
+      "label": "CustomerBoundary",
+      "sublabel": "per-call gate",
+      "pos": [
+        265,
+        240
+      ],
+      "size": [
+        155,
+        66
+      ],
+      "sources": [
+        {
+          "path": "src/chinook_support/agent.py",
+          "line": 51,
+          "label": "middleware"
+        }
+      ]
+    },
+    {
+      "id": "agent",
+      "type": "backend",
+      "label": "create_agent loop",
+      "sublabel": "model ⇄ tools",
+      "pos": [
+        505,
+        240
+      ],
+      "size": [
+        150,
+        66
+      ],
+      "sources": [
+        {
+          "path": "src/chinook_support/agent.py",
+          "line": 87,
+          "label": "build_agent"
+        }
+      ]
+    },
+    {
+      "id": "tools",
+      "type": "backend",
+      "label": "Four scoped tools",
+      "sublabel": "four tools",
+      "pos": [
+        740,
+        240
+      ],
+      "size": [
+        150,
+        66
+      ],
+      "sources": [
+        {
+          "path": "src/chinook_support/tools.py",
+          "line": 64,
+          "label": "TOOLS"
+        }
+      ]
+    },
+    {
+      "id": "databoundary",
+      "type": "security",
+      "label": "Data boundary",
+      "sublabel": "parameterized",
+      "tag": "no model SQL",
+      "pos": [
+        975,
+        240
+      ],
+      "size": [
+        155,
+        66
+      ],
+      "sources": [
+        {
+          "path": "src/chinook_support/db.py",
+          "line": 108,
+          "label": "ownership filter"
+        }
+      ]
+    },
+    {
+      "id": "chinook",
+      "type": "database",
+      "label": "Chinook SQLite",
+      "sublabel": "read-only",
+      "tag": "mode=ro",
+      "pos": [
+        1215,
+        240
+      ],
+      "size": [
+        145,
+        66
+      ],
+      "sources": [
+        {
+          "path": "src/chinook_support/db.py",
+          "line": 27,
+          "label": "read-only connect"
+        }
+      ]
+    },
+    {
+      "id": "hitl",
+      "type": "security",
+      "label": "HumanInTheLoop",
+      "sublabel": "approval gate",
+      "pos": [
+        740,
+        420
+      ],
+      "size": [
+        150,
+        66
+      ],
+      "sources": [
+        {
+          "path": "src/chinook_support/agent.py",
+          "line": 110,
+          "label": "interrupt_on"
+        }
+      ]
+    },
+    {
+      "id": "support",
+      "type": "database",
+      "label": "Support SQLite",
+      "sublabel": "owners · tickets",
+      "tag": "writable",
+      "pos": [
+        1215,
+        420
+      ],
+      "size": [
+        145,
+        66
+      ],
+      "sources": [
+        {
+          "path": "src/chinook_support/db.py",
+          "line": 158,
+          "label": "idempotent write"
+        }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Local host — loopback 127.0.0.1",
+      "wraps": [
+        "server",
+        "boundary",
+        "agent",
+        "tools",
+        "databoundary",
+        "chinook",
+        "hitl",
+        "support"
+      ]
+    },
+    {
+      "kind": "security-group",
+      "label": "Customer isolation — identity revalidated per model and tool call",
+      "wraps": [
+        "boundary",
+        "agent",
+        "tools",
+        "databoundary",
+        "hitl"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "operator-run",
+      "from": "studio",
+      "to": "server",
+      "label": "run · resume · context",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 50
+    },
+    {
+      "id": "server-gate",
+      "from": "server",
+      "to": "boundary",
+      "label": "before_agent",
+      "variant": "emphasis"
+    },
+    {
+      "id": "gate-agent",
+      "from": "boundary",
+      "to": "agent",
+      "label": "identity bound",
+      "variant": "emphasis"
+    },
+    {
+      "id": "model-call",
+      "from": "agent",
+      "to": "model",
+      "label": "tool-calling loop",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "labelDy": -45
+    },
+    {
+      "id": "agent-tools",
+      "from": "agent",
+      "to": "tools",
+      "label": "tool call",
+      "variant": "emphasis"
+    },
+    {
+      "id": "propose-write",
+      "from": "agent",
+      "to": "hitl",
+      "label": "write proposed",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "left"
+    },
+    {
+      "id": "approved-write",
+      "from": "hitl",
+      "to": "tools",
+      "label": "approved only",
+      "variant": "security",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "tools-data",
+      "from": "tools",
+      "to": "databoundary",
+      "label": "scoped query",
+      "variant": "emphasis"
+    },
+    {
+      "id": "read-catalog",
+      "from": "databoundary",
+      "to": "chinook",
+      "label": "SELECT",
+      "variant": "emphasis"
+    },
+    {
+      "id": "write-support",
+      "from": "databoundary",
+      "to": "support",
+      "label": "bind thread · insert ticket",
+      "fromSide": "bottom",
+      "toSide": "left"
+    },
+    {
+      "id": "tracing",
+      "from": "server",
+      "to": "langsmith",
+      "label": "traces",
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "left"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Primary path",
+      "items": [
+        "customer_id arrives as runtime context, never from chat",
+        "Server binds the thread, then the loop iterates model ⇄ tools",
+        "Tools: search_catalog · list_my_purchases · get_my_invoice · create_support_request"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Trust boundaries",
+      "items": [
+        "Model never sees or sets a customer_id; no model-authored SQL",
+        "Thread bound to one customer; mismatch raises PermissionError before the model runs",
+        "Missing and foreign invoices return identical responses — no existence oracle"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Gates and externals",
+      "items": [
+        "CustomerBoundary revalidates on before_agent, wrap_model_call, wrap_tool_call",
+        "Call limits 8/40 model, 12/60 tool; PermissionError fails closed",
+        "Only create_support_request writes; sha256(thread_id:tool_call_id) makes replay idempotent",
+        "External: OpenAI gpt-5.6, LangSmith cloud for traces and evals"
+      ]
+    }
+  ]
+}

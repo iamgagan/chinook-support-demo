@@ -147,7 +147,7 @@ Two evaluators run on every case. The deterministic `scenario_check` measures gr
 - [Demo runbook, Q&A, and Slack draft](docs/DEMO.md)
 - [Friction and verification log](docs/FRICTION.md)
 - [Handoff context and demo script](docs/HANDOFF.md) — one self-contained file: project state, verified numbers, and the spoken script. Paste it whole into another tool.
-- Standalone presentation pages in `docs/presentation/` — a glanceable cue sheet and a full promptbook
+- Standalone presentation pages in `docs/presentation/` — a glanceable cue sheet, a full promptbook, and an explorable [runtime architecture diagram](docs/presentation/runtime-architecture.html) (source spec alongside it)
 - Agent/tool/data code in `src/chinook_support/`; checks in `tests/test_support.py`.
 
 Verified: preflight, live Agent Server conversations with approval and rejection, three baseline/candidate experiments on one dataset, and a measured improvement in judged answer usefulness with no deterministic regression.
