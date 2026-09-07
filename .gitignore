@@ -8,3 +8,6 @@ __pycache__/
 data/*.sqlite*
 artifacts/
 .DS_Store
+
+# archify browser-evidence sidecars
+docs/presentation/*.visual-check.*

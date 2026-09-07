@@ -5109,15 +5109,15 @@
         <text data-detail="context" x="342.5" y="287" class="t-muted" font-size="9" text-anchor="middle">per-call gate</text>
         </g>
 
-        <g id="node-agent" data-node-id="agent" data-node-label="create_agent loop" tabindex="0" role="button" aria-label="Focus create_agent loop, model ⇄ tools, Local host — loopback 127.0.0.1 › Customer isolation — identity revalidated per model and tool call" aria-pressed="false" data-node-kind="backend" data-node-sublabel="model ⇄ tools" data-node-context="Local host — loopback 127.0.0.1 › Customer isolation — identity revalidated per model and tool call">
-          <title>create_agent loop · model ⇄ tools · Local host — loopback 127.0.0.1 › Customer isolation — identity revalidated per model and tool call</title>
+        <g id="node-agent" data-node-id="agent" data-node-label="create_agent loop" tabindex="0" role="button" aria-label="Focus create_agent loop, model + tool loop, Local host — loopback 127.0.0.1 › Customer isolation — identity revalidated per model and tool call" aria-pressed="false" data-node-kind="backend" data-node-sublabel="model + tool loop" data-node-context="Local host — loopback 127.0.0.1 › Customer isolation — identity revalidated per model and tool call">
+          <title>create_agent loop · model + tool loop · Local host — loopback 127.0.0.1 › Customer isolation — identity revalidated per model and tool call</title>
           <rect x="505" y="240" width="150" height="66" rx="6" class="c-mask"/>
           <rect x="505" y="240" width="150" height="66" rx="6" class="c-backend" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(511 246) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
           <text data-node-label="" data-detail-anchor="" x="580" y="271" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">create_agent loop</text>
-        <text data-detail="context" x="580" y="287" class="t-muted" font-size="9" text-anchor="middle">model ⇄ tools</text>
+        <text data-detail="context" x="580" y="287" class="t-muted" font-size="9" text-anchor="middle">model + tool loop</text>
         </g>
 
         <g id="node-tools" data-node-id="tools" data-node-label="Four scoped tools" tabindex="0" role="button" aria-label="Focus Four scoped tools, four tools, Local host — loopback 127.0.0.1 › Customer isolation — identity revalidated per model and tool call" aria-pressed="false" data-node-kind="backend" data-node-sublabel="four tools" data-node-context="Local host — loopback 127.0.0.1 › Customer isolation — identity revalidated per model and tool call">
@@ -5434,7 +5434,7 @@
         </div>
         <ul>
           <li>&bull; customer_id arrives as runtime context, never from chat</li>
-          <li>&bull; Server binds the thread, then the loop iterates model ⇄ tools</li>
+          <li>&bull; Server binds the thread, then the loop alternates model and tool calls</li>
           <li>&bull; Tools: search_catalog · list_my_purchases · get_my_invoice · create_support_request</li>
         </ul>
       </div>

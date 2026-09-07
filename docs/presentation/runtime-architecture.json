@@ -153,7 +153,7 @@
       "id": "agent",
       "type": "backend",
       "label": "create_agent loop",
-      "sublabel": "model ⇄ tools",
+      "sublabel": "model + tool loop",
       "pos": [
         505,
         240
@@ -403,7 +403,7 @@
       "title": "Primary path",
       "items": [
         "customer_id arrives as runtime context, never from chat",
-        "Server binds the thread, then the loop iterates model ⇄ tools",
+        "Server binds the thread, then the loop alternates model and tool calls",
         "Tools: search_catalog · list_my_purchases · get_my_invoice · create_support_request"
       ]
     },
