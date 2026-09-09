@@ -101,6 +101,10 @@ LangChain, so a business-model explanation reads as filler.
 >
 > That third one's where it stops being a chatbot.
 
+**If asked why only three** — the brief asks for at least two areas *and* warns against breadth
+("two to four business problems"). Three areas across four tools is inside that band on purpose;
+escalation is the one that earns its place because it is the only thing that writes.
+
 ---
 
 ## 3:00 · Recommendations  ⏱ checkpoint
@@ -568,6 +572,21 @@ Have the checklist ready — grouped, not recited:
 > The dataset evolves with the product. Which is exactly why it's generated from version-controlled
 > code with an integrity guard, rather than edited in a UI where it can drift out from under every
 > comparison built on it.
+
+**15 · Why three areas of work, and not more?**
+
+> The brief sets a floor and a ceiling. At least two areas, and separately: *"do not go for breadth of
+> tools — pick a short list, two to four business problems."* Three areas across four tools sits
+> inside that band deliberately.
+>
+> Discovery and purchase support are the two the brief names. **Escalation is the third and it's the
+> one that earns its place** — it's the only thing that writes, so it's where approval, ownership
+> rechecks and idempotency actually matter. Without it there's no human-in-the-loop story and nothing
+> irreversible to protect.
+>
+> A fourth area would have cost depth on those three without proving anything new. When I did want
+> more realism — routing an escalation to the customer's assigned sales rep — I added it as a join
+> inside the existing write rather than as a fifth tool.
 
 ---
 
