@@ -164,7 +164,8 @@ tests/test_support.py   20 offline checks, scripted models, no network
 docs/
   DEMO.md       runbook, live evidence, Q&A, Slack draft
   FRICTION.md   friction and verification log
-  HANDOFF.md    this file
+  ARCHITECTURE.md  components, request path, boundaries, data model
+  HANDOFF.md       this file
   ASSIGNMENT.md  the original Notion task, transcribed
   presentation/cue-sheet.html             glanceable reference for during the demo
   presentation/promptbook.html            full spoken script, with the diagram inline
