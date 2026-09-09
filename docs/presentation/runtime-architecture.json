@@ -10,7 +10,7 @@
     ],
     "repository": {
       "url": "https://github.com/iamgagan/chinook-support-demo",
-      "revision": "b65e28fe54ede08c7488b2a6360b2f5ff94a6238"
+      "revision": "29a35a46a495998d334e34d6d352c05df92b5d5b"
     },
     "views": [
       {
@@ -49,7 +49,7 @@
           "databoundary",
           "support"
         ],
-        "note": "The only path that mutates state, and the gate in front of it."
+        "note": "The only path that mutates state, its approval gate, and the rep it routes to."
       },
       {
         "id": "external",
@@ -186,7 +186,7 @@
       "sources": [
         {
           "path": "src/chinook_support/tools.py",
-          "line": 64,
+          "line": 66,
           "label": "TOOLS"
         }
       ]
@@ -208,7 +208,7 @@
       "sources": [
         {
           "path": "src/chinook_support/db.py",
-          "line": 108,
+          "line": 124,
           "label": "ownership filter"
         }
       ]
@@ -217,7 +217,7 @@
       "id": "chinook",
       "type": "database",
       "label": "Chinook SQLite",
-      "sublabel": "read-only",
+      "sublabel": "catalog · staff",
       "tag": "mode=ro",
       "pos": [
         1215,
@@ -232,6 +232,11 @@
           "path": "src/chinook_support/db.py",
           "line": 27,
           "label": "read-only connect"
+        },
+        {
+          "path": "src/chinook_support/db.py",
+          "line": 84,
+          "label": "assigned support rep"
         }
       ]
     },
@@ -273,7 +278,7 @@
       "sources": [
         {
           "path": "src/chinook_support/db.py",
-          "line": 158,
+          "line": 174,
           "label": "idempotent write"
         }
       ]
@@ -383,7 +388,7 @@
       "id": "write-support",
       "from": "databoundary",
       "to": "support",
-      "label": "bind thread · insert ticket",
+      "label": "bind thread · ticket + rep",
       "fromSide": "bottom",
       "toSide": "left"
     },
@@ -422,7 +427,7 @@
       "items": [
         "CustomerBoundary revalidates on before_agent, wrap_model_call, wrap_tool_call",
         "Call limits 8/40 model, 12/60 tool; PermissionError fails closed",
-        "Only create_support_request writes; sha256(thread_id:tool_call_id) makes replay idempotent",
+        "Only create_support_request writes; it routes to the customer's assigned Chinook sales rep and sha256(thread_id:tool_call_id) makes replay idempotent",
         "External: OpenAI gpt-5.6, LangSmith cloud for traces and evals"
       ]
     }

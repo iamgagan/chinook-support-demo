@@ -134,6 +134,7 @@
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 
+
   /* ---------- embedded runtime architecture (archify export) ---------- */
   .arch{
     margin:22px 0 0;
@@ -582,7 +583,7 @@
         <path data-edge-from="hitl" data-edge-to="tools" data-edge-label="approved only" data-edge-key="6" data-edge-id="approved-write" data-composition-points="815,420;815,306" d="M 815 420 L 815 306" class="a-security" stroke-width="1.5" marker-end="url(#arrowhead-security)"/>
         <path data-edge-from="tools" data-edge-to="databoundary" data-edge-label="scoped query" data-edge-key="7" data-edge-id="tools-data" data-composition-points="890,273;975,273" d="M 890 273 L 975 273" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         <path data-edge-from="databoundary" data-edge-to="chinook" data-edge-label="SELECT" data-edge-key="8" data-edge-id="read-catalog" data-composition-points="1130,273;1215,273" d="M 1130 273 L 1215 273" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
-        <path data-edge-from="databoundary" data-edge-to="support" data-edge-label="bind thread · insert ticket" data-edge-key="9" data-edge-id="write-support" data-composition-points="1052.5,306;1052.5,330;1191,330;1191,453;1215,453" d="M 1052.5 306 L 1052.5 322 Q 1052.5 330 1060.5 330 L 1183 330 Q 1191 330 1191 338 L 1191 445 Q 1191 453 1199 453 L 1215 453" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="databoundary" data-edge-to="support" data-edge-label="bind thread · ticket + rep" data-edge-key="9" data-edge-id="write-support" data-composition-points="1052.5,306;1052.5,330;1191,330;1191,453;1215,453" d="M 1052.5 306 L 1052.5 322 Q 1052.5 330 1060.5 330 L 1183 330 Q 1191 330 1191 338 L 1191 445 Q 1191 453 1199 453 L 1215 453" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         <path data-edge-from="server" data-edge-to="langsmith" data-edge-label="traces" data-edge-key="10" data-edge-id="tracing" data-composition-points="114.5,240;114.5,216;241,216;241,88;265,88" d="M 114.5 240 L 114.5 224 Q 114.5 216 122.5 216 L 233 216 Q 241 216 241 208 L 241 96 Q 241 88 249 88 L 265 88" class="a-dashed" stroke-width="1.5" marker-end="url(#arrowhead-dashed)"/>
 
         <!-- Components -->
@@ -682,8 +683,8 @@
         <text data-detail="fine" x="1052.5" y="298" class="t-security" font-size="7" text-anchor="middle">no model SQL</text>
         </g>
 
-        <g id="node-chinook" data-node-id="chinook" tabindex="0" role="button" aria-label="Focus Chinook SQLite, read-only, Local host — loopback 127.0.0.1" aria-pressed="false" data-node-kind="database" data-node-sublabel="read-only" data-node-tag="mode=ro" data-node-context="Local host — loopback 127.0.0.1">
-          <title>Chinook SQLite · read-only · Local host — loopback 127.0.0.1 · mode=ro</title>
+        <g id="node-chinook" data-node-id="chinook" tabindex="0" role="button" aria-label="Focus Chinook SQLite, catalog · staff, Local host — loopback 127.0.0.1" aria-pressed="false" data-node-kind="database" data-node-sublabel="catalog · staff" data-node-tag="mode=ro" data-node-context="Local host — loopback 127.0.0.1">
+          <title>Chinook SQLite · catalog · staff · Local host — loopback 127.0.0.1 · mode=ro</title>
           <rect x="1215" y="240" width="145" height="66" rx="6" class="c-mask"/>
           <rect x="1215" y="240" width="145" height="66" rx="6" class="c-database" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(1221 246) scale(0.6875)">
@@ -691,7 +692,7 @@
             <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
           </g>
           <text x="1287.5" y="271" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Chinook SQLite</text>
-        <text data-detail="context" x="1287.5" y="287" class="t-muted" font-size="9" text-anchor="middle">read-only</text>
+        <text data-detail="context" x="1287.5" y="287" class="t-muted" font-size="9" text-anchor="middle">catalog · staff</text>
         <text data-detail="fine" x="1287.5" y="298" class="t-database" font-size="7" text-anchor="middle">mode=ro</text>
         </g>
 
@@ -757,9 +758,9 @@
           <rect x="1153.1" y="253" width="38.8" height="14" rx="3" class="c-mask"/>
           <text x="1172.5" y="263" class="t-backend" font-size="8" text-anchor="middle">SELECT</text>
         </g>
-        <g data-detail="context" data-edge-from="databoundary" data-edge-to="support" data-edge-label="bind thread · insert ticket" data-edge-key="9" data-edge-id="write-support">
-          <rect x="1051.95" y="310" width="139.6" height="14" rx="3" class="c-mask"/>
-          <text x="1121.75" y="320" class="t-muted" font-size="8" text-anchor="middle">bind thread · insert ticket</text>
+        <g data-detail="context" data-edge-from="databoundary" data-edge-to="support" data-edge-label="bind thread · ticket + rep" data-edge-key="9" data-edge-id="write-support">
+          <rect x="1054.35" y="310" width="134.8" height="14" rx="3" class="c-mask"/>
+          <text x="1121.75" y="320" class="t-muted" font-size="8" text-anchor="middle">bind thread · ticket + rep</text>
         </g>
         <g data-detail="context" data-edge-from="server" data-edge-to="langsmith" data-edge-label="traces" data-edge-key="10" data-edge-id="tracing">
           <rect x="158.35" y="196" width="38.8" height="14" rx="3" class="c-mask"/>
