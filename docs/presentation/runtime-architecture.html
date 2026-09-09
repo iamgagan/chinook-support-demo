@@ -5032,7 +5032,9 @@
         <!-- Boundaries (behind everything) -->
         <rect data-graph-role="structural-frame" data-composition-frame-kind="region" data-composition-frame-id="0" data-composition-frame-label="Local host — loopback 127.0.0.1" x="5" y="210" width="1385" height="296" rx="12" class="c-region" stroke-width="1"/>
 
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="security-group" data-composition-frame-id="1" data-composition-frame-label="Customer isolation — identity revalidated per model and tool call" x="235" y="210" width="925" height="296" rx="8" class="c-security-group" stroke-width="1"/>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="security-group" data-composition-frame-id="1" data-composition-frame-label="Customer isolation — identity revalidated per model and tool call" x="235" y="196" width="925" height="310" rx="8" class="c-security-group" stroke-width="1"/>
+
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="security-group" data-composition-frame-id="2" data-composition-frame-label="Bounded execution — ModelCallLimit · ToolCallLimit · ToolError" x="475" y="210" width="445" height="296" rx="8" class="c-security-group" stroke-width="1"/>
 
         <!-- Connection paths (before components for correct z-order) -->
         <path data-edge-from="studio" data-edge-to="server" data-edge-label="run · resume · context" data-edge-key="0" data-edge-id="operator-run" data-composition-points="100.5,121;100.5,240" d="M 100.5 121 L 100.5 240" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
@@ -5109,8 +5111,8 @@
         <text data-detail="context" x="342.5" y="287" class="t-muted" font-size="9" text-anchor="middle">per-call gate</text>
         </g>
 
-        <g id="node-agent" data-node-id="agent" data-node-label="create_agent loop" tabindex="0" role="button" aria-label="Focus create_agent loop, model + tool loop, Local host — loopback 127.0.0.1 › Customer isolation — identity revalidated per model and tool call" aria-pressed="false" data-node-kind="backend" data-node-sublabel="model + tool loop" data-node-context="Local host — loopback 127.0.0.1 › Customer isolation — identity revalidated per model and tool call">
-          <title>create_agent loop · model + tool loop · Local host — loopback 127.0.0.1 › Customer isolation — identity revalidated per model and tool call</title>
+        <g id="node-agent" data-node-id="agent" data-node-label="create_agent loop" tabindex="0" role="button" aria-label="Focus create_agent loop, model + tool loop, Local host — loopback 127.0.0.1 › Customer isolation — identity revalidated per model and tool call › Bounded execution — ModelCallLimit · ToolCallLimit · ToolError" aria-pressed="false" data-node-kind="backend" data-node-sublabel="model + tool loop" data-node-context="Local host — loopback 127.0.0.1 › Customer isolation — identity revalidated per model and tool call › Bounded execution — ModelCallLimit · ToolCallLimit · ToolError">
+          <title>create_agent loop · model + tool loop · Local host — loopback 127.0.0.1 › Customer isolation — identity revalidated per model and tool call › Bounded execution — ModelCallLimit · ToolCallLimit · ToolError</title>
           <rect x="505" y="240" width="150" height="66" rx="6" class="c-mask"/>
           <rect x="505" y="240" width="150" height="66" rx="6" class="c-backend" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(511 246) scale(0.6875)">
@@ -5120,8 +5122,8 @@
         <text data-detail="context" x="580" y="287" class="t-muted" font-size="9" text-anchor="middle">model + tool loop</text>
         </g>
 
-        <g id="node-tools" data-node-id="tools" data-node-label="Four scoped tools" tabindex="0" role="button" aria-label="Focus Four scoped tools, four tools, Local host — loopback 127.0.0.1 › Customer isolation — identity revalidated per model and tool call" aria-pressed="false" data-node-kind="backend" data-node-sublabel="four tools" data-node-context="Local host — loopback 127.0.0.1 › Customer isolation — identity revalidated per model and tool call">
-          <title>Four scoped tools · four tools · Local host — loopback 127.0.0.1 › Customer isolation — identity revalidated per model and tool call</title>
+        <g id="node-tools" data-node-id="tools" data-node-label="Four scoped tools" tabindex="0" role="button" aria-label="Focus Four scoped tools, four tools, Local host — loopback 127.0.0.1 › Customer isolation — identity revalidated per model and tool call › Bounded execution — ModelCallLimit · ToolCallLimit · ToolError" aria-pressed="false" data-node-kind="backend" data-node-sublabel="four tools" data-node-context="Local host — loopback 127.0.0.1 › Customer isolation — identity revalidated per model and tool call › Bounded execution — ModelCallLimit · ToolCallLimit · ToolError">
+          <title>Four scoped tools · four tools · Local host — loopback 127.0.0.1 › Customer isolation — identity revalidated per model and tool call › Bounded execution — ModelCallLimit · ToolCallLimit · ToolError</title>
           <rect x="740" y="240" width="150" height="66" rx="6" class="c-mask"/>
           <rect x="740" y="240" width="150" height="66" rx="6" class="c-backend" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(746 246) scale(0.6875)">
@@ -5157,8 +5159,8 @@
         <text data-detail="fine" x="1287.5" y="298" class="t-database" font-size="7" text-anchor="middle">mode=ro</text>
         </g>
 
-        <g id="node-hitl" data-node-id="hitl" data-node-label="HumanInTheLoop" tabindex="0" role="button" aria-label="Focus HumanInTheLoop, approval gate, Local host — loopback 127.0.0.1 › Customer isolation — identity revalidated per model and tool call" aria-pressed="false" data-node-kind="security" data-node-sublabel="approval gate" data-node-context="Local host — loopback 127.0.0.1 › Customer isolation — identity revalidated per model and tool call">
-          <title>HumanInTheLoop · approval gate · Local host — loopback 127.0.0.1 › Customer isolation — identity revalidated per model and tool call</title>
+        <g id="node-hitl" data-node-id="hitl" data-node-label="HumanInTheLoop" tabindex="0" role="button" aria-label="Focus HumanInTheLoop, approval gate, Local host — loopback 127.0.0.1 › Customer isolation — identity revalidated per model and tool call › Bounded execution — ModelCallLimit · ToolCallLimit · ToolError" aria-pressed="false" data-node-kind="security" data-node-sublabel="approval gate" data-node-context="Local host — loopback 127.0.0.1 › Customer isolation — identity revalidated per model and tool call › Bounded execution — ModelCallLimit · ToolCallLimit · ToolError">
+          <title>HumanInTheLoop · approval gate · Local host — loopback 127.0.0.1 › Customer isolation — identity revalidated per model and tool call › Bounded execution — ModelCallLimit · ToolCallLimit · ToolError</title>
           <rect x="740" y="420" width="150" height="66" rx="6" class="c-mask"/>
           <rect x="740" y="420" width="150" height="66" rx="6" class="c-security" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(746 426) scale(0.6875)">
@@ -5235,8 +5237,13 @@
         </g>
 
         <g data-graph-role="structural-frame-label" data-composition-frame-id="1" data-composition-frame-kind="security-group" data-composition-frame-label="Customer isolation — identity revalidated per model and tool call">
-          <rect data-graph-role="structural-frame-label-mask" x="239" y="219" width="361.00003899999996" height="17" rx="3" class="c-mask"/>
-          <text data-boundary-label="" x="243" y="232.000001" class="t-security" font-size="9.000001" font-weight="600">Customer isolation — identity revalidated per model and tool call</text>
+          <rect data-graph-role="structural-frame-label-mask" x="239" y="200" width="361.00003899999996" height="17" rx="3" class="c-mask"/>
+          <text data-boundary-label="" x="243" y="213.000001" class="t-security" font-size="9.000001" font-weight="600">Customer isolation — identity revalidated per model and tool call</text>
+        </g>
+
+        <g data-graph-role="structural-frame-label" data-composition-frame-id="2" data-composition-frame-kind="security-group" data-composition-frame-label="Bounded execution — ModelCallLimit · ToolCallLimit · ToolError">
+          <rect data-graph-role="structural-frame-label-mask" x="479" y="219" width="344.80003719999996" height="17" rx="3" class="c-mask"/>
+          <text data-boundary-label="" x="483" y="232.000001" class="t-security" font-size="9.000001" font-weight="600">Bounded execution — ModelCallLimit · ToolCallLimit · ToolError</text>
         </g>
 
         <!-- Legend -->
@@ -5436,6 +5443,7 @@
           <li>&bull; customer_id arrives as runtime context, never from chat</li>
           <li>&bull; Server binds the thread, then the loop alternates model and tool calls</li>
           <li>&bull; Tools: search_catalog · list_my_purchases · get_my_invoice · create_support_request</li>
+          <li>&bull; External: OpenAI gpt-5.6, LangSmith cloud for traces and evals</li>
         </ul>
       </div>
 
@@ -5454,13 +5462,13 @@
       <div class="card">
         <div class="card-header">
           <div class="card-dot amber"></div>
-          <h3>Gates and externals</h3>
+          <h3>Middleware, in execution order</h3>
         </div>
         <ul>
-          <li>&bull; CustomerBoundary revalidates on before_agent, wrap_model_call, wrap_tool_call</li>
-          <li>&bull; Call limits 8/40 model, 12/60 tool; PermissionError fails closed</li>
-          <li>&bull; Only create_support_request writes; it routes to the customer&#39;s assigned Chinook sales rep and sha256(thread_id:tool_call_id) makes replay idempotent</li>
-          <li>&bull; External: OpenAI gpt-5.6, LangSmith cloud for traces and evals</li>
+          <li>&bull; CustomerBoundary — revalidates on before_agent, wrap_model_call, wrap_tool_call</li>
+          <li>&bull; ModelCallLimit 8/run · 40/thread, then ToolCallLimit 12/run · 60/thread</li>
+          <li>&bull; ToolError sanitizes data errors; PermissionError is left to fail closed</li>
+          <li>&bull; HumanInTheLoop interrupts create_support_request; approval routes it to the assigned rep</li>
         </ul>
       </div>
     </div>

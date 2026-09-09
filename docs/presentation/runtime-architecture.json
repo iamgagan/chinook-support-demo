@@ -309,6 +309,15 @@
         "databoundary",
         "hitl"
       ]
+    },
+    {
+      "kind": "security-group",
+      "label": "Bounded execution — ModelCallLimit · ToolCallLimit · ToolError",
+      "wraps": [
+        "agent",
+        "tools",
+        "hitl"
+      ]
     }
   ],
   "connections": [
@@ -409,7 +418,8 @@
       "items": [
         "customer_id arrives as runtime context, never from chat",
         "Server binds the thread, then the loop alternates model and tool calls",
-        "Tools: search_catalog · list_my_purchases · get_my_invoice · create_support_request"
+        "Tools: search_catalog · list_my_purchases · get_my_invoice · create_support_request",
+        "External: OpenAI gpt-5.6, LangSmith cloud for traces and evals"
       ]
     },
     {
@@ -423,12 +433,12 @@
     },
     {
       "dot": "amber",
-      "title": "Gates and externals",
+      "title": "Middleware, in execution order",
       "items": [
-        "CustomerBoundary revalidates on before_agent, wrap_model_call, wrap_tool_call",
-        "Call limits 8/40 model, 12/60 tool; PermissionError fails closed",
-        "Only create_support_request writes; it routes to the customer's assigned Chinook sales rep and sha256(thread_id:tool_call_id) makes replay idempotent",
-        "External: OpenAI gpt-5.6, LangSmith cloud for traces and evals"
+        "CustomerBoundary — revalidates on before_agent, wrap_model_call, wrap_tool_call",
+        "ModelCallLimit 8/run · 40/thread, then ToolCallLimit 12/run · 60/thread",
+        "ToolError sanitizes data errors; PermissionError is left to fail closed",
+        "HumanInTheLoop interrupts create_support_request; approval routes it to the assigned rep"
       ]
     }
   ]
