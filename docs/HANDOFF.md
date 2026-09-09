@@ -153,18 +153,22 @@ survives questioning.
 src/chinook_support/
   agent.py      create_agent, middleware stack, BASE_PROMPT and IMPROVED_PROMPT
   tools.py      four @tool definitions, CustomerContext
-  db.py         parameterized data boundary, thread binding, ticket idempotency
+  db.py         parameterized data boundary, thread binding, ticket idempotency,
+                support-rep lookup (Customer.SupportRepId → Employee)
 scripts/
-  evaluate.py   22 cases, both evaluators, local and --cloud modes
-  preflight.py  credential check
-  chat.py       terminal fallback with no JSON at the interrupt
+  evaluate.py      22 cases, both evaluators, local and --cloud modes
+  preflight.py     credential check
+  setup_studio.py  idempotently creates the two named Studio assistants
+  chat.py          terminal fallback with no JSON at the interrupt
 tests/test_support.py   20 offline checks, scripted models, no network
 docs/
   DEMO.md       runbook, live evidence, Q&A, Slack draft
   FRICTION.md   friction and verification log
   HANDOFF.md    this file
-  presentation/cue-sheet.html    glanceable reference for during the demo
-  presentation/promptbook.html   full spoken script with stage directions
+  ASSIGNMENT.md  the original Notion task, transcribed
+  presentation/cue-sheet.html             glanceable reference for during the demo
+  presentation/promptbook.html            full spoken script, with the diagram inline
+  presentation/runtime-architecture.html  explorable diagram; .json is its source spec
 ```
 
 ### Running it
@@ -213,14 +217,21 @@ These cost real time and will cost it again.
   `verified_examples()` refuses to run an experiment if the cloud dataset has drifted from its
   definition. Adding an example there breaks the next `--cloud` run.
 - **Grammarly hooks the JSON resume field** and can insert smart quotes that break the payload.
+- **Evaluator ordering is load-bearing in `evaluate.py`.** A run that already executed may already
+  have written a ticket, so it is persisted with its deterministic score *before* the LLM judge is
+  attempted; a judge failure degrades to an unscored case rather than losing the run. Adding the
+  judge originally broke this and it went unnoticed because no test covered the ordering. There is
+  one now (`test_local_evaluation_keeps_the_run_when_the_judge_fails`) — keep it if you extend the
+  evaluator list.
 
 ---
 
 ## What is done and what is not
 
-**Done:** build, 20 offline tests, baseline/candidate experiments with a measured improvement, live Studio
-walkthrough covering every beat including approve and reject, human annotation review recorded on
-three runs, friction log, repo pushed, Slack status posted.
+**Done:** build, 20 offline tests, baseline/candidate experiments with a measured improvement, live
+Studio walkthrough covering every beat including approve and reject, escalations routed to the
+customer's assigned support rep, human annotation review recorded on three runs, runtime architecture
+diagram, friction log, repo public and pushed, Slack status posted.
 
 **Not done:** a timed 35-minute rehearsal. That is the only remaining item.
 
