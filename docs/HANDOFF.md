@@ -631,6 +631,70 @@ https://smith.langchain.com/o/74f6d6b7-c5c5-4db6-896b-cf34143e0728/datasets/b4c3
 
 ---
 
+## Technical defense — if they stop the demo
+
+Twelve questions, answered in a breath each. If you only memorise the first clause of every answer, you'll be fine.
+
+**1 · Why one agent?**
+
+> Three jobs share one customer context and the same four tools. One loop means one trace to read and one thing to evaluate. Multi-agent adds coordination I'd have to secure and test, and I can't point at what it buys here. I'd split when a workflow needs genuinely different state or a conflicting tool surface — not for tidiness.
+
+**2 · Why `create_agent` rather than writing the LangGraph graph?**
+
+> `create_agent` *is* a LangGraph graph — you saw its nodes in Studio. I didn't hand-write it because the topology it generates is exactly what I want: a model-tool loop with middleware hooks at the right points. Hand-writing gets me the same graph plus maintenance. I'd drop to explicit LangGraph the moment I need control flow it can't express — parallel branches, fan-out and gather, or real phases in a state machine.
+
+**3 · Why middleware rather than prompt instructions?**
+
+> Because prompts are advisory and middleware isn't. It runs whether or not the model cooperates. It also puts each control at the right lifecycle point — identity before the model, approval between model and tools, limits around the loop — so the model can't route around a control by choosing a different path. And each one is testable in isolation, which is why every safety property here has a check.
+
+**4 · Why runtime context for identity?**
+
+> Anything the model can see, it can be talked into changing. Runtime context is supplied by the application beside the message, never inside it. There's no `customer_id` parameter on any tool and no way for the model to read one. That turns "don't reveal other customers' data" from an instruction into a structural property — which is why the injection attempt fails without the model being consulted.
+
+**5 · Why human-in-the-loop only on writes?**
+
+> Reads are already constrained: parameterized queries, ownership filters on every row, and a missing invoice is indistinguishable from someone else's. The blast radius of a bad read is bounded by the boundary itself. Writes are the only irreversible thing in the system. Gating reads would add friction with no risk reduction and make the product unusable. Gate what you can't undo.
+
+**6 · Why both deterministic checks and an LLM judge?**
+
+> They fail differently. Deterministic checks are exact, cheap, and can't be argued with — ownership, totals, write behaviour. But they saturate; 22 out of 22 on every variant tells you nothing about which is better. The judge is fuzzy and costs money, but it sees quality the assertions were never written to look for — it found the currency defect. Deterministic is the floor you never drop below; the judge is the gradient you improve along.
+
+**7 · Why LangSmith rather than generic tracing?**
+
+> OpenTelemetry gives you spans. It doesn't give you a dataset built from those spans, experiments that replay them against a new version, a rubric-scored judge, or an annotation queue that turns a human correction into a regression test. The loop is the product: trace to case, case to experiment, experiment to feedback, feedback back to case. I could rebuild that on generic tooling; it would take a quarter and be worse.
+
+**8 · How does this become production?**
+
+> Four changes, and the agent code is barely one of them. Identity from an authenticated session, with thread access authorized before the graph is invoked — today Studio's dropdown is simulated auth and I say so. A durable checkpointer and Postgres instead of in-memory and SQLite. A real service boundary with per-tenant limits. And the eval set grows from 22 curated cases to hundreds drawn from real traffic. The surface around the agent changes; the loop mostly doesn't.
+
+**9 · How would you control latency and cost?**
+
+> I measured it rather than guessing. Baseline runs median **3.8 seconds and 1,545 tokens**, about **$0.008 a run**. The candidate is **4.0 seconds and 2,014 tokens**, about **$0.011** — so the quality fix cost roughly 30% more tokens, and in exchange p95 tightened from 10.7 seconds to 7.1. A full 22-case experiment costs about 24 cents.
+>
+> Levers in order: the loop is already capped at 8 model and 12 tool calls; trim tool payloads, since catalog search returns ten rows where three would do; cache catalog reads, which are immutable; and only then route simple turns to a smaller model. That last one goes last because it's the change most likely to quietly degrade quality — and it's exactly the change the eval set exists to police.
+
+**10 · When would you introduce Deep Agents or multi-agent?**
+
+> Deep Agents when a task needs planning across many steps, a scratch filesystem, or delegation — a refund investigation that reads forty invoices and writes a summary. Multi-agent when two workflows need genuinely different tool surfaces or system prompts that would otherwise fight each other. Neither for three-turn support.
+>
+> The test I'd apply: can I still read one trace and understand what happened? When the answer becomes no, the architecture has to change — and the same tracing and evaluation still applies that day.
+
+**11 · How do online traces feed offline evals?**
+
+> Studio and production runs land in the tracing project. Anything interesting — a failure, an ambiguous answer — goes to the annotation queue. A person scores it and writes the correction. That correction becomes a case in `cases()` in `evaluate.py`, which is version-controlled code, so the dataset regenerates with a new hash and both variants rerun against it.
+>
+> Worth stressing: the dataset is **generated from code, not edited in the UI**. There's an integrity guard that refuses to run an experiment if the cloud dataset has drifted from its definition, because a silently-changed dataset invalidates every comparison built on it.
+
+**12 · What are the biggest limitations of this submission?**
+
+> Four, in the order they'd bother me.
+>
+> Studio's operator-selected identity is simulated authentication, not authentication. Twenty-two cases demonstrates a process; it doesn't certify a system, and the headline improvement is judged by a model on 21 scored cases. Catalog search is literal substring matching plus exact genre — no semantic search, no ranking, no personalisation beyond excluding what you own. And the checkpointer is in-memory with SQLite underneath, so there's no concurrency story.
+>
+> A fifth I'd volunteer before you ask: the judge shares a model family with the agent. I mitigate that with deterministic checks it can't argue past and with human review that agreed independently — but I wouldn't call it independent evidence.
+
+---
+
 ## If it goes wrong
 
 - **Live inference dies** — say plainly you're switching to recorded evidence and use the saved traces. Never pass a recording off as live.

@@ -1037,6 +1037,66 @@ uv run langgraph dev --no-browser            # leave this running</pre></div>
   </div>
 </section>
 
+<section class="scene">
+  <div class="scene-head"><span class="clock">Defense</span><h2>If they stop the demo</h2></div>
+  <p class="goal">Twelve questions, a breath each. Memorise the first clause of every answer and you are fine.</p>
+  <div class="qa">
+    <div class="aside">
+      <p class="q">1 · Why one agent?</p>
+      <p>Three jobs share one customer context and the same four tools. One loop means one trace to read and one thing to evaluate. Multi-agent adds coordination I'd have to secure and test, and I can't point at what it buys here. I'd split when a workflow needs genuinely different state or a conflicting tool surface &mdash; not for tidiness.</p>
+    </div>
+    <div class="aside">
+      <p class="q">2 · Why <code>create_agent</code> rather than writing the LangGraph graph?</p>
+      <p><code>create_agent</code> <em>is</em> a LangGraph graph &mdash; you saw its nodes in Studio. I didn't hand-write it because the topology it generates is exactly what I want: a model-tool loop with middleware hooks at the right points. Hand-writing gets me the same graph plus maintenance. I'd drop to explicit LangGraph the moment I need control flow it can't express &mdash; parallel branches, fan-out and gather, or real phases in a state machine.</p>
+    </div>
+    <div class="aside">
+      <p class="q">3 · Why middleware rather than prompt instructions?</p>
+      <p>Because prompts are advisory and middleware isn't. It runs whether or not the model cooperates. It also puts each control at the right lifecycle point &mdash; identity before the model, approval between model and tools, limits around the loop &mdash; so the model can't route around a control by choosing a different path. And each one is testable in isolation, which is why every safety property here has a check.</p>
+    </div>
+    <div class="aside">
+      <p class="q">4 · Why runtime context for identity?</p>
+      <p>Anything the model can see, it can be talked into changing. Runtime context is supplied by the application beside the message, never inside it. There's no <code>customer_id</code> parameter on any tool and no way for the model to read one. That turns &quot;don't reveal other customers' data&quot; from an instruction into a structural property &mdash; which is why the injection attempt fails without the model being consulted.</p>
+    </div>
+    <div class="aside">
+      <p class="q">5 · Why human-in-the-loop only on writes?</p>
+      <p>Reads are already constrained: parameterized queries, ownership filters on every row, and a missing invoice is indistinguishable from someone else's. The blast radius of a bad read is bounded by the boundary itself. Writes are the only irreversible thing in the system. Gating reads would add friction with no risk reduction and make the product unusable. Gate what you can't undo.</p>
+    </div>
+    <div class="aside">
+      <p class="q">6 · Why both deterministic checks and an LLM judge?</p>
+      <p>They fail differently. Deterministic checks are exact, cheap, and can't be argued with &mdash; ownership, totals, write behaviour. But they saturate; 22 out of 22 on every variant tells you nothing about which is better. The judge is fuzzy and costs money, but it sees quality the assertions were never written to look for &mdash; it found the currency defect. Deterministic is the floor you never drop below; the judge is the gradient you improve along.</p>
+    </div>
+    <div class="aside">
+      <p class="q">7 · Why LangSmith rather than generic tracing?</p>
+      <p>OpenTelemetry gives you spans. It doesn't give you a dataset built from those spans, experiments that replay them against a new version, a rubric-scored judge, or an annotation queue that turns a human correction into a regression test. The loop is the product: trace to case, case to experiment, experiment to feedback, feedback back to case. I could rebuild that on generic tooling; it would take a quarter and be worse.</p>
+    </div>
+    <div class="aside">
+      <p class="q">8 · How does this become production?</p>
+      <p>Four changes, and the agent code is barely one of them. Identity from an authenticated session, with thread access authorized before the graph is invoked &mdash; today Studio's dropdown is simulated auth and I say so. A durable checkpointer and Postgres instead of in-memory and SQLite. A real service boundary with per-tenant limits. And the eval set grows from 22 curated cases to hundreds drawn from real traffic. The surface around the agent changes; the loop mostly doesn't.</p>
+    </div>
+    <div class="aside">
+      <p class="q">9 · How would you control latency and cost?</p>
+      <p>I measured it rather than guessing. Baseline runs median <strong>3.8 seconds and 1,545 tokens</strong>, about <strong>$0.008 a run</strong>. The candidate is <strong>4.0 seconds and 2,014 tokens</strong>, about <strong>$0.011</strong> &mdash; so the quality fix cost roughly 30% more tokens, and in exchange p95 tightened from 10.7 seconds to 7.1. A full 22-case experiment costs about 24 cents.</p>
+      <p>Levers in order: the loop is already capped at 8 model and 12 tool calls; trim tool payloads, since catalog search returns ten rows where three would do; cache catalog reads, which are immutable; and only then route simple turns to a smaller model. That last one goes last because it's the change most likely to quietly degrade quality &mdash; and it's exactly the change the eval set exists to police.</p>
+    </div>
+    <div class="aside">
+      <p class="q">10 · When would you introduce Deep Agents or multi-agent?</p>
+      <p>Deep Agents when a task needs planning across many steps, a scratch filesystem, or delegation &mdash; a refund investigation that reads forty invoices and writes a summary. Multi-agent when two workflows need genuinely different tool surfaces or system prompts that would otherwise fight each other. Neither for three-turn support.</p>
+      <p>The test I'd apply: can I still read one trace and understand what happened? When the answer becomes no, the architecture has to change &mdash; and the same tracing and evaluation still applies that day.</p>
+    </div>
+    <div class="aside">
+      <p class="q">11 · How do online traces feed offline evals?</p>
+      <p>Studio and production runs land in the tracing project. Anything interesting &mdash; a failure, an ambiguous answer &mdash; goes to the annotation queue. A person scores it and writes the correction. That correction becomes a case in <code>cases()</code> in <code>evaluate.py</code>, which is version-controlled code, so the dataset regenerates with a new hash and both variants rerun against it.</p>
+      <p>Worth stressing: the dataset is <strong>generated from code, not edited in the UI</strong>. There's an integrity guard that refuses to run an experiment if the cloud dataset has drifted from its definition, because a silently-changed dataset invalidates every comparison built on it.</p>
+    </div>
+    <div class="aside">
+      <p class="q">12 · What are the biggest limitations of this submission?</p>
+      <p>Four, in the order they'd bother me.</p>
+      <p>Studio's operator-selected identity is simulated authentication, not authentication. Twenty-two cases demonstrates a process; it doesn't certify a system, and the headline improvement is judged by a model on 21 scored cases. Catalog search is literal substring matching plus exact genre &mdash; no semantic search, no ranking, no personalisation beyond excluding what you own. And the checkpointer is in-memory with SQLite underneath, so there's no concurrency story.</p>
+      <p>A fifth I'd volunteer before you ask: the judge shares a model family with the agent. I mitigate that with deterministic checks it can't argue past and with human review that agreed independently &mdash; but I wouldn't call it independent evidence.</p>
+    </div>
+  </div>
+</section>
+
 <footer>
   <p><strong>Splits to note:</strong> 3:00 first prompt &middot; 13:00 ticket request &middot; 18:00 opening the failed trace &middot; 23:00 comparison &middot; 35:00 done. More than ~40s adrift at a checkpoint, cut narration at 7:00 rather than the trace.</p>
   <p><strong>If live inference dies:</strong> say plainly you're switching to recorded evidence and use the saved traces. Never pass a recording off as live.</p>
