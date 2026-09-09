@@ -2,7 +2,7 @@
 
 A LangChain agent for music discovery, purchase support, and human-approved demo tickets. LangSmith Studio is the interface. The goal is to show how a customer team can inspect failures and measure improvements—not just get a chatbot response.
 
-**Current verification:** 18 offline checks pass; OpenAI `gpt-5.6` and LangSmith preflight pass; three cloud experiments on the same 22-case dataset each pass 22/22 deterministic checks while the LLM-judge `answer_usefulness` mean moves 0.895 to 0.981 after acting on judge feedback; and a live Agent Server conversation covering recommendations, a refused identity switch, and both the approval and rejection paths succeeded with customer context. A human annotation-queue review and a timed rehearsal remain before presentation. Global API-key fallback is disabled.
+**Current verification:** 18 offline checks pass; OpenAI `gpt-5.6` and LangSmith preflight pass; baseline and candidate experiments on the same 22-case dataset each pass 22/22 deterministic checks while the LLM-judge `answer_usefulness` mean moves 0.905 to 0.971 after acting on judge feedback; and a live Agent Server conversation covering recommendations, a refused identity switch, and both the approval and rejection paths succeeded with customer context. A human annotation-queue review and a timed rehearsal remain before presentation. Global API-key fallback is disabled.
 
 ## Run locally
 

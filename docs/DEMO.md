@@ -22,7 +22,7 @@ Explain the stack in roughly two minutes: LangChain assembles the agent/tools/mi
 | 13–15 | Ask to become customer 2 and see invoice 293 | Chat does not change identity; unavailable invoice response |
 | 15–20 | Request a ticket for invoice 382; inspect, reject, request again, approve | No write before review or after rejection; successful tool result contains a persisted demo ticket ID |
 | 20–24 | Open the 16/18 baseline run and read the failed `artist` span | The agent was right and the evaluator was wrong; a red cell is a hypothesis, not a verdict |
-| 24–30 | Dataset, three experiments, and the annotation queue | Deterministic 22/22 throughout; judge mean 0.895 to 0.981 after acting on judge feedback; show the queued 3/5 case |
+| 24–30 | Dataset, three experiments, and the annotation queue | Deterministic 22/22 throughout; judge mean 0.905 to 0.971 after acting on judge feedback; show the queued 3/5 case |
 | 30–33 | Show the four tools and boundary/middleware code | Ownership belongs in code; review policy belongs in middleware; replay protection belongs in SQLite |
 | 33–35 | Friction and next customer step | What remains uncertain and a measured pilot proposal |
 
@@ -49,14 +49,13 @@ middleware are identical in every run.
 
 | Experiment | Deterministic `scenario_check` | `answer_usefulness` mean | Cases judged 5/5 |
 | --- | --- | --- | --- |
-| [chinook-baseline-8ce3044d](https://smith.langchain.com/o/74f6d6b7-c5c5-4db6-896b-cf34143e0728/datasets/b4c3b1b1-446a-4cac-9f5a-6945e22f8548/compare?selectedSessions=020c8636-9b82-4586-ac41-3e13ec2e8a74) | 22/22 | 0.895 (4.48/5) | 10/21 |
-| [chinook-improved-7cc40033](https://smith.langchain.com/o/74f6d6b7-c5c5-4db6-896b-cf34143e0728/datasets/b4c3b1b1-446a-4cac-9f5a-6945e22f8548/compare?selectedSessions=29a2c330-ce22-4946-9d66-57bfdb6af056) (candidate v1) | 22/22 | 0.914 (4.57/5) | 13/21 |
-| [chinook-improved-f9a51018](https://smith.langchain.com/o/74f6d6b7-c5c5-4db6-896b-cf34143e0728/datasets/b4c3b1b1-446a-4cac-9f5a-6945e22f8548/compare?selectedSessions=b17fd307-24f5-4d11-8c8b-589ad6a76214) (candidate v2) | 22/22 | **0.981 (4.91/5)** | **19/21** |
+| [chinook-baseline-e07f3efc](https://smith.langchain.com/o/74f6d6b7-c5c5-4db6-896b-cf34143e0728/datasets/b4c3b1b1-446a-4cac-9f5a-6945e22f8548/compare?selectedSessions=d2adb255-4f88-49db-809c-f7e270a2757b) | 22/22 | 0.905 (4.52/5) | 11/21 |
+| [chinook-improved-827c23af](https://smith.langchain.com/o/74f6d6b7-c5c5-4db6-896b-cf34143e0728/datasets/b4c3b1b1-446a-4cac-9f5a-6945e22f8548/compare?selectedSessions=6dd787ba-7676-43b8-b5ce-2296736cfa3d) | 22/22 | **0.971 (4.86/5)** | **19/21** |
 
 The `missing-identity` case is deliberately unscored by the judge: it has no customer-facing answer
 because it fails closed, and a refusal must never be rated as a bad reply.
 
-Earlier experiments on the previous 18-case dataset are retained as the evaluator-bug evidence
+Earlier runs (`8ce3044d` / `7cc40033` / `f9a51018`) measured the agent before support-rep routing was added; the numbers above describe the shipped code. Experiments on the previous 18-case dataset are retained as the evaluator-bug evidence
 described below: `chinook-baseline-864a37c2` and `chinook-improved-3cbbd006` at 16/18, then
 `chinook-baseline-cdfbef97` and `chinook-improved-4916f64b` at 18/18 after the evaluator was fixed.
 
@@ -117,7 +116,7 @@ rank two good prompts, and weakening the baseline to manufacture a gap would be 
 
 **7. The judge finds what the deterministic checks cannot.** Adding `answer_usefulness`, an
 LLM-as-judge scoring the rubric 1-5, immediately surfaced a systematic defect no deterministic
-check was looking for: in 10 of 21 judged baseline cases the agent quoted prices and totals as bare
+check was looking for: in 7 of 21 judged baseline cases the agent quoted prices and totals as bare
 numbers. It was obeying its instruction not to invent a currency, but a customer reading "0.99" has
 no idea what unit that is. The judge kept returning the same category: *currency omitted*.
 
@@ -126,9 +125,9 @@ candidate prompt as one instruction: state once per reply that the catalog recor
 a currency field, never guess a currency, and close with a next step where one applies. Rerunning
 the same dataset and model:
 
-- `answer_usefulness` mean 0.895 to 0.981 (4.48/5 to 4.91/5)
-- cases judged 5/5: 10/21 to 19/21
-- currency complaints: 10 to 0
+- `answer_usefulness` mean 0.905 to 0.971 (4.52/5 to 4.86/5)
+- cases judged 5/5: 11/21 to 19/21
+- currency complaints: 7 to 0
 - deterministic `scenario_check`: 22/22 in every run, so no safety or grounding regression
 
 That is the full loop the customer should take away: trace to diagnose, dataset to hold the

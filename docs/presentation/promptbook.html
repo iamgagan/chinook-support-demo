@@ -330,8 +330,19 @@
 </section>
 
 <section class="scene">
-  <div class="scene-head"><span class="clock">1:00</span><h2>The stack, fast</h2></div>
-  <p class="goal">Covers the "explain the OSS" requirement in sixty seconds. Don't linger.</p>
+  <div class="scene-head"><span class="clock">1:00</span><h2>The company, then the stack</h2></div>
+  <p class="goal">The brief asks for LangChain as a company before the OSS. Thirty seconds on the model, then the four names. Don't linger.</p>
+  <div class="say">
+    <p>Quick word on who you'd be buying from, because the model matters as much as the tech.</p>
+    <p>LangChain started as an open-source project and the company grew up around it. The framework
+    stays free and open — that's LangChain, LangGraph, and now Deep Agents. The commercial product
+    is LangSmith.</p>
+    <p>That split is deliberate, and it's the part I'd want you to notice: <strong>you build on the
+    open stack without a contract</strong>, and you pay for the thing that's hardest to build
+    yourself — seeing what your agents actually did, and proving a change made them better.</p>
+    <p>So there's no lock-in on the code you write. Which also means they have to keep earning the
+    paid part. Let me show you why I think it earns it.</p>
+  </div>
   <div class="say">
     <p>Four names, quickly, because they get used interchangeably and they're not the same.</p>
     <p><strong>LangChain</strong> is what you build with. Model, tools, prompt, safety controls.
@@ -458,6 +469,10 @@
     <p>And if that approval gets retried &mdash; blip, double click &mdash; you get the same ticket
     back, not a second one. Key's a hash of the thread and the tool call. Safe structurally, not
     because the model remembered.</p>
+    <p>One more thing on that ticket: <strong>it's assigned to Jane Peacock.</strong> Chinook already
+    gives every customer a named sales support agent, so the escalation follows the relationship
+    that's in your data rather than landing in an anonymous queue. That's a join, not a feature
+    &mdash; but it's the difference between a demo and something a store would actually run.</p>
   </div>
 </section>
 
@@ -500,13 +515,13 @@
     <p>I could've broken the baseline to open a gap. That's the demo where I show you a green arrow
     and you learn nothing.</p>
     <p>So &mdash; second evaluator. LLM grading usefulness one to five against a rubric.</p>
-    <p><strong>Ten of twenty-one cases, same flag:</strong> prices quoted as bare numbers. Zero point
+    <p><strong>Seven of twenty-one cases, same flag:</strong> prices quoted as bare numbers. Zero point
     nine nine. It was correctly following my instruction not to invent a currency, but nobody reading
     that knows what it is. Chinook doesn't say.</p>
     <p>No assertion I'd have written would catch that. It's a quality problem.</p>
     <p>One instruction into the candidate. Same cases, same model, rerun.</p>
-    <p><strong>0.895 to 0.981.</strong> Full marks went ten to nineteen. Currency complaints ten to
-    zero. Safety checks stayed 22 out of 22 &mdash; better answers, nothing loosened.</p>
+    <p><strong>0.905 to 0.971.</strong> Full marks went eleven to nineteen. Currency complaints seven
+    to zero. Safety checks stayed 22 out of 22 &mdash; better answers, nothing loosened.</p>
   </div>
 </section>
 
@@ -814,6 +829,13 @@
     checkable by anyone &mdash; it said prices had no currency. You can read the answers and confirm
     that in ten seconds. It just found it faster than reading twenty-two transcripts. It scales
     attention, it doesn't have taste.</p>
+  </div>
+  <div class="aside">
+    <p class="q">"Why does the ticket go to that person?"</p>
+    <p>Chinook has a SupportRepId on every customer pointing at an employee — customer one is Jane
+    Peacock, customer two is Steve Johnson. I join it at write time and store the rep on the ticket,
+    so an escalation inherits the account relationship you already have. It cost one join and no
+    extra tool, which is why it was worth doing; a fifth tool would not have been.</p>
   </div>
   <div class="aside">
     <p class="q">"Why one agent, not multi-agent?"</p>

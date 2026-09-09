@@ -95,6 +95,13 @@ reproducible against `langgraph dev` 0.13.4 with `langgraph-api` in-memory runti
   zero tokens, and there is no prompt to jailbreak. It still reaches the operator as an unformatted
   Python error rather than an explanation, so it needs framing before it is shown.
 
+- **The dataset already modelled the support relationship:** Chinook gives every customer a
+  `SupportRepId` pointing at an `Employee` — customer 1 to Jane Peacock, customer 2 to Steve Johnson,
+  eight agents in total. The first build ignored it and escalations went into an anonymous table.
+  Routing the ticket to the assigned agent cost one join and no extra tool, and it is the single
+  change that most made the demo feel like something a real store would run. Worth reading the
+  schema for relationships before designing the workflow, not after.
+
 ## Remaining evidence
 
 A live model conversation, live Studio review interactions, observed model failure, measured evaluation comparison, annotation review, and a timed rehearsal require working model and LangSmith access. Scripted-model tests validate control flow and data boundaries; they do not substitute for those live requirements.

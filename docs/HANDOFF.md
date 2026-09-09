@@ -41,7 +41,8 @@ LangGraph Agent Server with LangSmith Studio as the interface.
 **Three workflows:**
 1. Music discovery, including excluding tracks the customer already owns
 2. Explaining an owned invoice and its line items
-3. Opening a demo support ticket, gated behind human approval
+3. Opening a demo support ticket, gated behind human approval and routed to the customer's
+   assigned Chinook sales support agent (`Customer.SupportRepId → Employee`)
 
 **Four tools** (`src/chinook_support/tools.py`): `search_catalog`, `list_my_purchases`,
 `get_my_invoice`, `create_support_request`. The model never writes SQL and never sees a customer ID.
@@ -90,9 +91,11 @@ model and settings throughout. Only the candidate prompt differs between runs.
 
 | Experiment | Deterministic | Judge mean | Judged 5/5 |
 | --- | --- | --- | --- |
-| `chinook-baseline-8ce3044d` | 22/22 | 0.895 | 10/21 |
-| `chinook-improved-7cc40033` (v1) | 22/22 | 0.914 | 13/21 |
-| `chinook-improved-f9a51018` (v2) | 22/22 | **0.981** | **19/21** |
+| `chinook-baseline-e07f3efc` | 22/22 | 0.905 | 11/21 |
+| `chinook-improved-827c23af` | 22/22 | **0.971** | **19/21** |
+
+Earlier runs (`8ce3044d`, `7cc40033`, `f9a51018`) measured the agent before support-rep routing was
+added. They are retained, but the table above describes the shipped code.
 
 Two evaluators: `scenario_check` (deterministic grounding, ownership, totals, write behaviour, and
 the tool *arguments* chosen) and `answer_usefulness` (LLM-as-judge, 1-5 against a rubric). The judge
@@ -133,11 +136,11 @@ survives questioning.
 5. **The metric then saturates.** All variants hit 22/22, including four cases added specifically to
    probe what the candidate prompt claims to fix. The baseline passed all four unaided. A saturated
    metric cannot rank two good prompts, and weakening the baseline to open a gap would be dishonest.
-6. **The judge finds what checks cannot.** `answer_usefulness` flagged the same thing in 10 of 21
+6. **The judge finds what checks cannot.** `answer_usefulness` flagged the same thing in 7 of 21
    baseline cases: prices quoted as bare numbers. The agent was correctly obeying "never invent a
    currency," but a customer reading `0.99` does not know the unit.
 7. **Feedback becomes the next version.** One instruction added to the candidate prompt. Rerun:
-   judge mean 0.895 to 0.981, 5/5 cases 10 to 19, currency complaints 10 to 0, deterministic checks
+   judge mean 0.905 to 0.971, 5/5 cases 11 to 19, currency complaints 7 to 0, deterministic checks
    unchanged at 22/22. Better answers with no control loosened.
 
 ---
@@ -257,7 +260,20 @@ tabs open for Tracing / Datasets & Experiments / the 16-of-18 baseline run / Ann
 >
 > Let me just run it and you'll see what I mean.
 
-## 1:00 — The stack, fast
+## 1:00 — The company, then the stack
+
+> Quick word on who you'd be buying from, because the model matters as much as the tech.
+>
+> LangChain started as an open-source project and the company grew up around it. The framework stays
+> free and open — that's LangChain, LangGraph, and now Deep Agents. The commercial product is
+> LangSmith.
+>
+> That split is deliberate, and it's the part I'd want you to notice: you build on the open stack
+> without a contract, and you pay for the thing that's hardest to build yourself — seeing what your
+> agents actually did, and proving a change made them better.
+>
+> So there's no lock-in on the code you write. Which also means they have to keep earning the paid
+> part. Let me show you why I think it earns it.
 
 > Four names, quickly, because they get used interchangeably and they're not the same.
 >
@@ -374,6 +390,11 @@ Re-run — one row.**
 > And if that approval gets retried — blip, double click — you get the same ticket back, not a
 > second one. Key's a hash of the thread and the tool call. Safe structurally, not because the model
 > remembered.
+>
+> One more thing on that ticket: it's assigned to Jane Peacock. Chinook already gives every customer
+> a named sales support agent, so the escalation follows the relationship that's in your data rather
+> than landing in an anonymous queue. That's a join, not a feature — but it's the difference between
+> a demo and something a store would actually run.
 
 ## 18:00 — The failure that wasn't
 
@@ -420,7 +441,7 @@ Re-run — one row.**
 >
 > So — second evaluator. LLM grading usefulness one to five against a rubric.
 >
-> Ten of twenty-one cases, same flag: prices quoted as bare numbers. Zero point nine nine. It was
+> Seven of twenty-one cases, same flag: prices quoted as bare numbers. Zero point nine nine. It was
 > correctly following my instruction not to invent a currency, but nobody reading that knows what it
 > is. Chinook doesn't say.
 >
@@ -428,7 +449,7 @@ Re-run — one row.**
 >
 > One instruction into the candidate. Same cases, same model, rerun.
 >
-> 0.895 to 0.981. Full marks went ten to nineteen. Currency complaints ten to zero. Safety checks
+> 0.905 to 0.971. Full marks went eleven to nineteen. Currency complaints seven to zero. Safety checks
 > stayed 22 out of 22 — better answers, nothing loosened.
 
 ## 26:00 — Human review
@@ -497,6 +518,13 @@ Re-run — one row.**
 > by anyone — it said prices had no currency. You can read the answers and confirm that in ten
 > seconds. It just found it faster than reading twenty-two transcripts. It scales attention, it
 > doesn't have taste.
+
+**"Why does the ticket go to that person?"**
+
+> Chinook has a SupportRepId on every customer pointing at an employee — customer one is Jane
+> Peacock, customer two is Steve Johnson. I join it at write time and store the rep on the ticket, so
+> an escalation inherits the account relationship you already have. It cost one join and no extra
+> tool, which is why it was worth doing; a fifth tool would not have been.
 
 **"Why one agent, not multi-agent?"**
 

@@ -63,9 +63,13 @@ def initialize():
             request_key TEXT PRIMARY KEY, customer_id INTEGER NOT NULL,
             thread_id TEXT NOT NULL, invoice_id INTEGER NOT NULL,
             reason TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'open',
+            rep_id INTEGER,
             created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
         );
         """)
+        # Additive so an existing demo database keeps its tickets.
+        if "rep_id" not in {row[1] for row in connection.execute("PRAGMA table_info(tickets)")}:
+            connection.execute("ALTER TABLE tickets ADD COLUMN rep_id INTEGER")
 
 
 def require_customer(customer_id):
@@ -75,6 +79,18 @@ def require_customer(customer_id):
         if not connection.execute("SELECT 1 FROM Customer WHERE CustomerId = ?", (customer_id,)).fetchone():
             raise PermissionError("A valid customer identity is required in runtime context.")
     return customer_id
+
+
+def support_rep(customer_id):
+    """Chinook assigns every customer a sales support agent; escalations follow it."""
+    require_customer(customer_id)
+    with closing(catalog()) as connection:
+        row = connection.execute("""
+        SELECT e.EmployeeId AS rep_id, e.FirstName || ' ' || e.LastName AS rep, e.Title AS rep_title
+        FROM Customer c JOIN Employee e ON e.EmployeeId = c.SupportRepId
+        WHERE c.CustomerId = ?
+        """, (customer_id,)).fetchone()
+    return dict(row) if row else None
 
 
 def bind_thread(customer_id, thread_id):
@@ -165,15 +181,16 @@ def create_ticket(customer_id, thread_id, tool_call_id, invoice_id, reason):
         return {"error": "Invoice unavailable for the current customer."}
     key = hashlib.sha256(f"{thread_id}:{tool_call_id}".encode()).hexdigest()
     reason = reason.strip()
+    rep = support_rep(customer_id) or {}
     with closing(support()) as connection, connection:
         connection.execute("""INSERT OR IGNORE INTO tickets
-            (request_key, customer_id, thread_id, invoice_id, reason) VALUES (?, ?, ?, ?, ?)""",
-            (key, customer_id, thread_id, invoice_id, reason))
+            (request_key, customer_id, thread_id, invoice_id, reason, rep_id) VALUES (?, ?, ?, ?, ?, ?)""",
+            (key, customer_id, thread_id, invoice_id, reason, rep.get("rep_id")))
         ticket = connection.execute("SELECT * FROM tickets WHERE request_key = ?", (key,)).fetchone()
         if (ticket["customer_id"], ticket["invoice_id"], ticket["reason"]) != (customer_id, invoice_id, reason):
             raise ValueError("An existing request cannot be replayed with different arguments")
     return {"ticket_id": key, "invoice_id": invoice_id, "reason": reason, "status": ticket["status"],
-            "demo_only": True}
+            "assigned_rep": rep.get("rep"), "rep_title": rep.get("rep_title"), "demo_only": True}
 
 
 if __name__ == "__main__":

@@ -55,7 +55,9 @@ def create_support_request(
 ) -> dict:
     """Create a demo support ticket about an owned invoice, only when explicitly requested.
 
-    Human review is required before execution. This does not issue a refund or contact anyone.
+    Human review is required before execution. The ticket is routed to the sales support
+    agent Chinook already assigns this customer, returned as assigned_rep.
+    This does not issue a refund or contact anyone.
     """
     return db.create_ticket(identity(runtime), runtime.config["configurable"]["thread_id"],
                             runtime.tool_call_id, invoice_id, reason)

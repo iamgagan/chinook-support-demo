@@ -231,6 +231,24 @@ with patch("dotenv.load_dotenv"), patch("dotenv.dotenv_values", return_value=loc
         deliberate = {**lucky, "calls": [{"name": "search_catalog", "args": {"genre": "Rock", "exclude_owned": True}}]}
         self.assertEqual(check_case(example["inputs"], deliberate, example["outputs"])["score"], 1)
 
+    def test_ticket_routes_to_the_assigned_support_rep(self):
+        """Chinook models a support rep per customer; an escalation must follow it."""
+        rep1, rep2 = db.support_rep(1), db.support_rep(2)
+        self.assertEqual(rep1["rep"], "Jane Peacock")
+        self.assertEqual(rep2["rep"], "Steve Johnson")
+        self.assertNotEqual(rep1["rep_id"], rep2["rep_id"])
+        ticket = db.create_ticket(1, "rep-thread", "call-1", self.invoice, "Download missing")
+        self.assertEqual(ticket["assigned_rep"], rep1["rep"])
+        self.assertEqual(ticket["rep_title"], "Sales Support Agent")
+        with closing(db.support()) as connection:
+            stored = connection.execute(
+                "SELECT rep_id FROM tickets WHERE request_key = ?", (ticket["ticket_id"],)).fetchone()
+        self.assertEqual(stored["rep_id"], rep1["rep_id"])
+        # Replay stays idempotent and keeps the same routing.
+        again = db.create_ticket(1, "rep-thread", "call-1", self.invoice, "Download missing")
+        self.assertEqual(again["ticket_id"], ticket["ticket_id"])
+        self.assertEqual(len(self.tickets()), 1)
+
     def test_judge_skips_cases_with_no_customer_answer(self):
         """The judge must never invent a usefulness score for a fail-closed run."""
         from scripts.evaluate import cases, judge_answer
