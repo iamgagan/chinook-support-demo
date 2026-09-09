@@ -262,6 +262,25 @@ code review pass.
 
 ---
 
+## Think in five modules, not 450 lines
+
+This document is preparation, not a performance. LangChain engineers will interrupt, and they may
+spend ten minutes on the identity boundary and never let you reach the evaluator section. Know which
+module you're in and you can always resume, reorder, or drop one.
+
+| # | Module | Beats | If you only get one sentence |
+| --- | --- | --- | --- |
+| 1 | **Agent** | 3:00 – 10:00 | The model picks the tool argument; identity is never one of them. |
+| 2 | **Security** | 10:00 – 13:00 | The model declines, and underneath, code refuses before the model runs. |
+| 3 | **HITL** | 13:00 – 18:00 | The only irreversible action waits for a person, and replay is idempotent. |
+| 4 | **LangSmith debugging** | 18:00 – 23:00 | The trace proved my evaluator was wrong, not the agent. |
+| 5 | **Evaluation improvement** | 23:00 – 29:00 | Deterministic checks saturated; a judge found what they couldn't. |
+
+Architecture and friction close it out. **Modules 2 and 4 are the ones worth defending if you lose
+time** — they're the two that separate this from a chatbot demo.
+
+---
+
 ## −10:00 · Before anyone joins
 
 Run all of this off camera. If you restart the server later, rerun the last two lines.
@@ -308,21 +327,21 @@ uv run python scripts/setup_studio.py
 
 ---
 
-## 1:00 · The company, then the stack
+## 1:00 · The stack, in twenty seconds
 
-> Quick word on who you'd be buying from, because the model matters as much as the tech.
->
-> LangChain started as an open-source project and the company grew up around it. The framework stays free and open — that's LangChain, LangGraph, and now Deep Agents. The commercial product is LangSmith.
->
-> That split is deliberate: **you build on the open stack without a contract**, and you pay for the thing that's hardest to build yourself — seeing what your agents actually did, and proving a change made them better.
->
-> So there's no lock-in on the code you write. Which also means they have to keep earning the paid part.
->
-> Four names, quickly. **LangChain** is what you build with — model, tools, prompt, safety controls. Here it's one function call. **LangGraph** is what it runs on: state, persistence, stopping halfway and picking back up. **Deep Agents** is a bigger harness — planning, filesystem, sub-agents. Didn't use it, I'll say why later. **LangSmith** is how you know it works.
->
-> Build with LangChain, runs on LangGraph, know it works with LangSmith.
+The brief asks you to cover LangChain as a company. Cover it and move — you are pitching *to*
+LangChain, so a business-model explanation reads as filler.
 
-**CAREFUL** Ten minutes maximum on business framing before live software. Past 2:30 here, skip to the demo — Deep Agents returns at 29:00 anyway.
+> LangChain the company grew out of the open-source project. The framework is open; LangSmith is the
+> commercial piece.
+>
+> I used **LangChain** for the agent abstraction, **LangGraph** for durable execution and interrupts,
+> and **LangSmith** for traces and the evaluation loop. Deep Agents I deliberately didn't use — I'll
+> say why later.
+>
+> I'll show you why each one mattered rather than explaining them up front.
+
+**CAREFUL** Do not elaborate here. If you're past 1:30, you're selling LangChain to LangChain.
 
 ---
 
@@ -631,6 +650,50 @@ https://smith.langchain.com/o/74f6d6b7-c5c5-4db6-896b-cf34143e0728/datasets/b4c3
 
 ---
 
+## Where things belong — the one-paragraph architecture
+
+If you get one chance to explain the whole design, use this. It is the rule every other decision
+follows from.
+
+> **Anything probabilistic and behavioural can live in the prompt. Cross-cutting execution policy
+> belongs in middleware. Domain capabilities belong in tools. Security invariants and data integrity
+> belong at deterministic application and database boundaries.**
+>
+> I don't move something into the prompt just because the model usually follows it.
+
+Worked through this system: *tone, clarification, how to phrase a refusal* → prompt. *Identity
+revalidation, call limits, error sanitising, the approval gate* → middleware. *Catalog search,
+invoice lookup, ticket creation* → tools. *Ownership filters, the thread-owner primary key, the
+idempotency key, read-only mode on the catalog* → database and data layer.
+
+The test: **if a control would be violated by a model that ignored its instructions, it is in the
+wrong layer.**
+
+---
+
+## Failure taxonomy — how to debug an agent
+
+Better than "I read the traces." Four classes, and you have a live example of each.
+
+| Class | What it looks like | Where you find it | Example here |
+| --- | --- | --- | --- |
+| **Agent** | wrong reasoning, wrong tool, wrong answer | trace: model spans and tool arguments | model picks `query` where `genre` was meant |
+| **Tool / system** | timeouts, SQLite errors, provider 5xx | trace: tool span status, error text | `ToolErrorMiddleware` sanitising a data error |
+| **Policy** | cross-customer access, unauthorised write | trace: run dies before the model | `PermissionError` in `before_agent`, 5 ms, 0 tokens |
+| **Measurement** | the evaluator is wrong, not the agent | compare trace against the reference | the 16/18 apostrophe false negative |
+
+> Four things can be wrong when a run looks bad. The agent reasoned badly. A tool or dependency
+> failed. A policy correctly refused and I misread it as a failure. Or my measurement is wrong.
+>
+> They're diagnosed differently, and only the first is a prompt or model problem. The trace is what
+> tells you which one you're in — the tool arguments say whether the agent reasoned correctly, the
+> span status says whether the system held, and where the run *died* says whether a policy fired.
+>
+> The fourth category is the one people skip, and it's the one that cost me a day. If I hadn't
+> opened that trace I'd have "fixed" a working agent.
+
+---
+
 ## Technical defense — if they stop the demo
 
 Twelve questions, answered in a breath each. If you only memorise the first clause of every answer, you'll be fine.
@@ -665,13 +728,50 @@ Twelve questions, answered in a breath each. If you only memorise the first clau
 
 **8 · How does this become production?**
 
-> Four changes, and the agent code is barely one of them. Identity from an authenticated session, with thread access authorized before the graph is invoked — today Studio's dropdown is simulated auth and I say so. A durable checkpointer and Postgres instead of in-memory and SQLite. A real service boundary with per-tenant limits. And the eval set grows from 22 curated cases to hundreds drawn from real traffic. The surface around the agent changes; the loop mostly doesn't.
+> Four changes, and the agent code is barely one of them. The surface around the agent changes; the
+> loop mostly doesn't.
+
+Have the checklist ready — grouped, not recited:
+
+- **Identity and access** — real identity from authenticated claims, not an operator dropdown; thread
+  authorization before graph invocation; RBAC or policy enforcement on tools
+- **Data and services** — an API or service layer rather than direct SQLite; production-grade
+  persistent checkpointing; a real ticketing integration instead of the local demo table
+- **Correctness under retry** — the idempotency key I already have, kept across service retries and
+  redeliveries, not just in-thread
+- **Operations** — secrets management, per-tenant rate limiting, latency and SLO monitoring, incident
+  and on-call runbooks
+- **Privacy** — PII-aware tracing with redaction before spans leave the process
+- **The loop itself** — evaluation gates in CI/CD so a regression blocks a deploy, and online
+  sampling of production traces into the annotation queue
+
+> The thing I'd insist on: **the eval gate in CI.** Everything else is standard service hardening.
+> That one is what stops the agent quietly getting worse.
 
 **9 · How would you control latency and cost?**
 
 > I measured it rather than guessing. Baseline runs median **3.8 seconds and 1,545 tokens**, about **$0.008 a run**. The candidate is **4.0 seconds and 2,014 tokens**, about **$0.011** — so the quality fix cost roughly 30% more tokens, and in exchange p95 tightened from 10.7 seconds to 7.1. A full 22-case experiment costs about 24 cents.
 >
 > Levers in order: the loop is already capped at 8 model and 12 tool calls; trim tool payloads, since catalog search returns ten rows where three would do; cache catalog reads, which are immutable; and only then route simple turns to a smaller model. That last one goes last because it's the change most likely to quietly degrade quality — and it's exactly the change the eval set exists to police.
+
+**If they push to a million conversations:**
+
+> At that volume the questions change from "is it fast" to "what am I paying per conversation and
+> where does the tail come from."
+>
+> I'd measure **p50, p95 and p99 by node**, not by run — the model spans are the cost and the tail;
+> tool spans here are sub-millisecond. Then: cut model-call count, which is the dominant term;
+> eliminate unnecessary tool loops; control prompt and context growth, because conversation history
+> is what silently doubles token cost; cache deterministic reads, since the catalog is immutable;
+> route simple classification turns to a smaller model; run independent tool calls in parallel; and
+> sample traces rather than recording every one.
+>
+> Two things I already have become economics rather than safety at that point.
+> **`ModelCallLimitMiddleware` and `ToolCallLimitMiddleware` are a cost ceiling per conversation** —
+> today they stop a runaway agent, but at scale they're what makes spend predictable. A hard bound of
+> 8 model calls per run means I can multiply and get a worst case, which you cannot do with an
+> unbounded loop.
+
 
 **10 · When would you introduce Deep Agents or multi-agent?**
 
@@ -692,6 +792,34 @@ Twelve questions, answered in a breath each. If you only memorise the first clau
 > Studio's operator-selected identity is simulated authentication, not authentication. Twenty-two cases demonstrates a process; it doesn't certify a system, and the headline improvement is judged by a model on 21 scored cases. Catalog search is literal substring matching plus exact genre — no semantic search, no ranking, no personalisation beyond excluding what you own. And the checkpointer is in-memory with SQLite underneath, so there's no concurrency story.
 >
 > A fifth I'd volunteer before you ask: the judge shares a model family with the agent. I mitigate that with deterministic checks it can't argue past and with human review that agreed independently — but I wouldn't call it independent evidence.
+
+**13 · Did you just overfit the prompt to your 22 cases?**
+
+> Fair challenge, and partly yes by construction — the candidate prompt names `exclude_owned`, genre
+> handling, invoice lookup and currency wording, and I wrote those after looking at results.
+>
+> Three things keep it honest. The instructions are **semantic invariants, not case patches** — "state
+> the unit is unspecified" applies to every priced answer, not to case seven. The four hardest cases
+> were added *after* the prompt was written and the baseline passed them unaided, so they're closer to
+> held-out than tuned-on. And the win was found by a judge scoring a rubric, not by me reading
+> failures and patching them one at a time.
+>
+> What I'd actually do next: **hold out a slice**, seed the dataset from production traffic rather
+> than my imagination, and calibrate the judge against human scores on a sample. Right now the
+> honest claim is that the method works, not that the prompt generalises.
+
+**14 · Twenty-two cases isn't enough. How does evaluation scale?**
+
+> Agreed, and I'd say it before you do. **The 22 cases demonstrate the methodology; they don't
+> establish production reliability.**
+>
+> Scaling it means seeding from five sources: historical conversations, production failures,
+> adversarial cases, edge cases, and human-reviewed traces out of the annotation queue. Every
+> meaningful production incident becomes a regression case — **a failure should buy you a test.**
+>
+> The dataset evolves with the product. Which is exactly why it's generated from version-controlled
+> code with an integrity guard, rather than edited in a UI where it can drift out from under every
+> comparison built on it.
 
 ---
 

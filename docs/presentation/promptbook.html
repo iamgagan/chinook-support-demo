@@ -325,6 +325,26 @@
   </div>
 </header>
 
+
+<section class="scene">
+  <div class="scene-head"><span class="clock">Map</span><h2>Think in five modules, not 500 lines</h2></div>
+  <p class="goal">Preparation, not a performance. They will interrupt, and may spend ten minutes on the identity boundary. Know which module you're in and you can resume, reorder, or drop one.</p>
+  <div class="do">
+    <span class="lbl">Modules</span>
+    <ol>
+      <li><strong>Agent</strong> &middot; 3:00&ndash;10:00 &mdash; the model picks the tool argument; identity is never one of them</li>
+      <li><strong>Security</strong> &middot; 10:00&ndash;13:00 &mdash; the model declines, and underneath, code refuses before the model runs</li>
+      <li><strong>HITL</strong> &middot; 13:00&ndash;18:00 &mdash; the only irreversible action waits for a person, and replay is idempotent</li>
+      <li><strong>LangSmith debugging</strong> &middot; 18:00&ndash;23:00 &mdash; the trace proved my evaluator was wrong, not the agent</li>
+      <li><strong>Evaluation improvement</strong> &middot; 23:00&ndash;29:00 &mdash; deterministic checks saturated; a judge found what they couldn't</li>
+    </ol>
+  </div>
+  <div class="expect"><span class="lbl">If you lose time</span>
+    <p><strong>Modules 2 and 4 are the ones worth defending.</strong> They are what separate this from
+    a chatbot demo. Architecture and friction close it out.</p>
+  </div>
+</section>
+
 <section class="scene">
   <div class="scene-head"><span class="clock">-10:00</span><h2>Before anyone joins</h2></div>
   <p class="goal">Run all of this off camera. If you restart the server later, rerun the last two.</p>
@@ -374,28 +394,18 @@ uv run langgraph dev --no-browser            # leave this running</pre></div>
 </section>
 
 <section class="scene">
-  <div class="scene-head"><span class="clock">1:00</span><h2>The company, then the stack</h2></div>
-  <p class="goal">The brief asks for LangChain as a company before the OSS. Thirty seconds on the model, then the four names.</p>
+  <div class="scene-head"><span class="clock">1:00</span><h2>The stack, in twenty seconds</h2></div>
+  <p class="goal">The brief asks you to cover LangChain as a company. Cover it and move &mdash; you are pitching <em>to</em> LangChain, so a business-model explanation reads as filler.</p>
   <div class="say">
-    <p>Quick word on who you'd be buying from, because the model matters as much as the tech.</p>
-    <p>LangChain started as an open-source project and the company grew up around it. The framework
-    stays free and open &mdash; that's LangChain, LangGraph, and now Deep Agents. The commercial
-    product is LangSmith.</p>
-    <p>That split is deliberate: <strong>you build on the open stack without a contract</strong>, and
-    you pay for the thing that's hardest to build yourself &mdash; seeing what your agents actually
-    did, and proving a change made them better.</p>
-    <p>So there's no lock-in on the code you write. Which also means they have to keep earning the
-    paid part.</p>
-    <p>Four names, quickly. <strong>LangChain</strong> is what you build with &mdash; model, tools,
-    prompt, safety controls. Here it's one function call. <strong>LangGraph</strong> is what it runs
-    on: state, persistence, stopping halfway and picking back up. <strong>Deep Agents</strong> is a
-    bigger harness &mdash; planning, filesystem, sub-agents. Didn't use it, I'll say why later.
-    <strong>LangSmith</strong> is how you know it works.</p>
-    <p>Build with LangChain, runs on LangGraph, know it works with LangSmith.</p>
+    <p>LangChain the company grew out of the open-source project. The framework is open; LangSmith is
+    the commercial piece.</p>
+    <p>I used <strong>LangChain</strong> for the agent abstraction, <strong>LangGraph</strong> for
+    durable execution and interrupts, and <strong>LangSmith</strong> for traces and the evaluation
+    loop. Deep Agents I deliberately didn't use &mdash; I'll say why later.</p>
+    <p>I'll show you why each one mattered rather than explaining them up front.</p>
   </div>
-  <div class="warn"><span class="lbl">Hard stop</span>
-    <p>Ten minutes maximum on business framing before live software. If you're past 2:30 here, skip
-    straight to the demo &mdash; Deep Agents comes back at 29:00 anyway.</p>
+  <div class="warn"><span class="lbl">Careful</span>
+    <p>Do not elaborate here. If you're past 1:30, you're selling LangChain to LangChain.</p>
   </div>
 </section>
 
@@ -1038,6 +1048,50 @@ uv run langgraph dev --no-browser            # leave this running</pre></div>
 </section>
 
 <section class="scene">
+  <div class="scene-head"><span class="clock">Core</span><h2>Where things belong</h2></div>
+  <p class="goal">If you get one chance to explain the whole design, use this. Every other decision follows from it.</p>
+  <div class="say">
+    <p><strong>Anything probabilistic and behavioural can live in the prompt. Cross-cutting execution
+    policy belongs in middleware. Domain capabilities belong in tools. Security invariants and data
+    integrity belong at deterministic application and database boundaries.</strong></p>
+    <p>I don't move something into the prompt just because the model usually follows it.</p>
+  </div>
+  <div class="expect"><span class="lbl">Worked through this system</span>
+    <p>Tone, clarification, how to phrase a refusal &rarr; <strong>prompt</strong>. Identity
+    revalidation, call limits, error sanitising, the approval gate &rarr; <strong>middleware</strong>.
+    Catalog search, invoice lookup, ticket creation &rarr; <strong>tools</strong>. Ownership filters,
+    the thread-owner primary key, the idempotency key, read-only mode &rarr;
+    <strong>database</strong>.</p>
+    <p>The test: <strong>if a control would be violated by a model that ignored its instructions, it
+    is in the wrong layer.</strong></p>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="scene-head"><span class="clock">Debug</span><h2>Failure taxonomy</h2></div>
+  <p class="goal">Better than "I read the traces." Four classes, and you have a live example of each.</p>
+  <div class="do">
+    <span class="lbl">Classes</span>
+    <ol>
+      <li><strong>Agent</strong> &mdash; wrong reasoning, tool or answer. Found in the model spans and tool arguments.</li>
+      <li><strong>Tool / system</strong> &mdash; timeouts, SQLite errors, provider 5xx. Found in tool span status.</li>
+      <li><strong>Policy</strong> &mdash; a control correctly refused. The run dies before the model: 5&nbsp;ms, zero tokens.</li>
+      <li><strong>Measurement</strong> &mdash; the evaluator is wrong, not the agent. The 16/18 apostrophe case.</li>
+    </ol>
+  </div>
+  <div class="say">
+    <p>Four things can be wrong when a run looks bad. The agent reasoned badly. A tool or dependency
+    failed. A policy correctly refused and I misread it as a failure. Or my measurement is wrong.</p>
+    <p>They're diagnosed differently, and only the first is a prompt or model problem. The trace tells
+    you which one you're in &mdash; the tool arguments say whether the agent reasoned correctly, the
+    span status says whether the system held, and <em>where the run died</em> says whether a policy
+    fired.</p>
+    <p><strong>The fourth category is the one people skip, and it's the one that cost me a day.</strong>
+    If I hadn't opened that trace I'd have "fixed" a working agent.</p>
+  </div>
+</section>
+
+<section class="scene">
   <div class="scene-head"><span class="clock">Defense</span><h2>If they stop the demo</h2></div>
   <p class="goal">Twelve questions, a breath each. Memorise the first clause of every answer and you are fine.</p>
   <div class="qa">
@@ -1093,6 +1147,32 @@ uv run langgraph dev --no-browser            # leave this running</pre></div>
       <p>Four, in the order they'd bother me.</p>
       <p>Studio's operator-selected identity is simulated authentication, not authentication. Twenty-two cases demonstrates a process; it doesn't certify a system, and the headline improvement is judged by a model on 21 scored cases. Catalog search is literal substring matching plus exact genre &mdash; no semantic search, no ranking, no personalisation beyond excluding what you own. And the checkpointer is in-memory with SQLite underneath, so there's no concurrency story.</p>
       <p>A fifth I'd volunteer before you ask: the judge shares a model family with the agent. I mitigate that with deterministic checks it can't argue past and with human review that agreed independently &mdash; but I wouldn't call it independent evidence.</p>
+    </div>
+    <div class="aside">
+      <p class="q">13 · Did you just overfit the prompt to your 22 cases?</p>
+      <p>Fair challenge, and partly yes by construction &mdash; the candidate prompt names
+      <code>exclude_owned</code>, genre handling, invoice lookup and currency wording, and I wrote
+      those after looking at results.</p>
+      <p>Three things keep it honest. The instructions are <strong>semantic invariants, not case
+      patches</strong> &mdash; "state the unit is unspecified" applies to every priced answer, not to
+      case seven. The four hardest cases were added <em>after</em> the prompt was written and the
+      baseline passed them unaided, so they're closer to held-out than tuned-on. And the win was found
+      by a judge scoring a rubric, not by me reading failures and patching them one at a time.</p>
+      <p>What I'd do next: hold out a slice, seed from production traffic rather than my imagination,
+      and calibrate the judge against human scores. The honest claim today is that the method works,
+      not that the prompt generalises.</p>
+    </div>
+    <div class="aside">
+      <p class="q">14 · Twenty-two cases isn't enough. How does evaluation scale?</p>
+      <p>Agreed, and I'd say it before you do. <strong>The 22 cases demonstrate the methodology; they
+      don't establish production reliability.</strong></p>
+      <p>Scaling means seeding from five sources: historical conversations, production failures,
+      adversarial cases, edge cases, and human-reviewed traces out of the annotation queue. Every
+      meaningful production incident becomes a regression case &mdash; <strong>a failure should buy
+      you a test.</strong></p>
+      <p>The dataset evolves with the product. Which is why it's generated from version-controlled
+      code with an integrity guard, rather than edited in a UI where it can drift out from under every
+      comparison built on it.</p>
     </div>
   </div>
 </section>
