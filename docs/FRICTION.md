@@ -102,6 +102,14 @@ reproducible against `langgraph dev` 0.13.4 with `langgraph-api` in-memory runti
   change that most made the demo feel like something a real store would run. Worth reading the
   schema for relationships before designing the workflow, not after.
 
+- **Adding an evaluator quietly broke an evidence guarantee:** the harness was built so a run that
+  already executed — and may already have written a ticket — is saved before anything else can fail.
+  Introducing the LLM judge put a network call inside the same expression that built the score list,
+  so a judge timeout raised before the result was appended and the completed run vanished from the
+  report. The fix persists the run and its deterministic score first, then degrades a judge failure
+  to an unscored case. A regression test now reproduces the outage. The lesson is that an
+  evidence-ordering guarantee needs a test, not a convention, or the next feature silently removes it.
+
 ## Remaining evidence
 
 A live model conversation, live Studio review interactions, observed model failure, measured evaluation comparison, annotation review, and a timed rehearsal require working model and LangSmith access. Scripted-model tests validate control flow and data boundaries; they do not substitute for those live requirements.

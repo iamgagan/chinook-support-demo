@@ -66,11 +66,10 @@ described below: `chinook-baseline-864a37c2` and `chinook-improved-3cbbd006` at 
   paused at the interrupt and resumed to a persisted ticket. A separate live thread confirmed the
   rejection path resumes with no ticket written.
 
-Still pending before the presentation, and both are yours to do:
+Human review is recorded on three runs — `no-inventory`, `artist`, and the 3/5 `foreign-ticket`
+case — with operator scores and notes, from a human source rather than the evaluators.
 
-- Record at least one human review in the annotation queue. The queue is populated and the rubric
-  is attached; only an operator judgement is missing, and it must not be simulated.
-- A timed run-through of the full 35 minutes.
+Still pending before the presentation: a timed run-through of the full 35 minutes.
 
 ## The observed failure, diagnosed and measured
 

@@ -2,7 +2,7 @@
 
 A LangChain agent for music discovery, purchase support, and human-approved demo tickets. LangSmith Studio is the interface. The goal is to show how a customer team can inspect failures and measure improvements—not just get a chatbot response.
 
-**Current verification:** 18 offline checks pass; OpenAI `gpt-5.6` and LangSmith preflight pass; baseline and candidate experiments on the same 22-case dataset each pass 22/22 deterministic checks while the LLM-judge `answer_usefulness` mean moves 0.905 to 0.971 after acting on judge feedback; and a live Agent Server conversation covering recommendations, a refused identity switch, and both the approval and rejection paths succeeded with customer context. A human annotation-queue review and a timed rehearsal remain before presentation. Global API-key fallback is disabled.
+**Current verification:** 20 offline checks pass; OpenAI `gpt-5.6` and LangSmith preflight pass; baseline and candidate experiments on the same 22-case dataset each pass 22/22 deterministic checks while the LLM-judge `answer_usefulness` mean moves 0.905 to 0.971 after acting on judge feedback; and a live Agent Server conversation covering recommendations, a refused identity switch, and both the approval and rejection paths succeeded with customer context. A human annotation-queue review is recorded on three runs. A timed rehearsal remains before presentation. Global API-key fallback is disabled.
 
 ## Run locally
 
@@ -37,13 +37,24 @@ Open the Studio URL printed by the server, normally:
 
 <https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024>
 
-Select the **support** graph, start a new thread, and set **runtime context** to:
+Then create the two named assistants the demo uses. This is idempotent and needs the server running:
 
-```json
-{"customer_id": 1}
+```sh
+uv run python scripts/setup_studio.py
 ```
 
-Use the runtime context input, not a chat message or a `customer_id` tool argument. Every run/resume needs the same context. Studio supplies the thread ID. Use a new thread when switching to customer 2. If a Studio version exposes context differently, the local API request shape is:
+In Studio, select the **support** graph and pick the **`support — customer 1`** assistant. It carries
+`{"customer_id": 1}` as runtime context, so identity persists across runs *and* resumes — including
+the approval interrupt, where a per-run context is easy to forget.
+
+The assistants exist because Studio's input panel does not surface the context field, even though the
+server advertises it on `/assistants/{id}/schemas`; see [docs/FRICTION.md](docs/FRICTION.md). The dev
+server keeps assistants in memory, so rerun the script after restarting it. Identity never comes from
+a chat message or a model-chosen argument. Studio supplies the thread ID. Switch customers with the
+**`support — customer 2`** assistant **and a new thread** — a thread is bound to one customer, and
+reusing it across identities fails closed by design.
+
+The equivalent local API request shape is:
 
 ```json
 {
@@ -150,6 +161,6 @@ Two evaluators run on every case. The deterministic `scenario_check` measures gr
 - Standalone presentation pages in `docs/presentation/` — a glanceable cue sheet, a full promptbook, and an explorable [runtime architecture diagram](docs/presentation/runtime-architecture.html) (source spec alongside it)
 - Agent/tool/data code in `src/chinook_support/`; checks in `tests/test_support.py`.
 
-Verified: preflight, live Agent Server conversations with approval and rejection, three baseline/candidate experiments on one dataset, and a measured improvement in judged answer usefulness with no deterministic regression.
+Verified: preflight, live Agent Server conversations with approval and rejection, baseline/candidate experiments on one dataset, a measured improvement in judged answer usefulness with no deterministic regression, and human review recorded in the annotation queue.
 
-Remaining, and not simulated on your behalf: record a human review in the annotation queue, run a timed rehearsal, and post the proposed-approach message to the assignment Slack channel. Kill any old `langgraph dev` still holding port 2024 before rehearsing, or the documented Studio URL will reach a server running a stale environment.
+Remaining: run a timed rehearsal. (The Slack proposed-approach message has been posted and the annotation review recorded.) Kill any old `langgraph dev` still holding port 2024 before rehearsing, or the documented Studio URL will reach a server running a stale environment.

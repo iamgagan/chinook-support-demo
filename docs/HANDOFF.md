@@ -73,7 +73,7 @@ Everything here was confirmed by execution.
 
 | Check | Result |
 | --- | --- |
-| Offline test suite | 18 tests, all pass, no network |
+| Offline test suite | 20 tests, all pass, no network |
 | Preflight (OpenAI + LangSmith) | both reachable |
 | Model | `gpt-5.6`, `reasoning_effort=none` |
 | Clean-clone setup from the repo | works: sync, db init, tests all pass |
@@ -158,7 +158,7 @@ scripts/
   evaluate.py   22 cases, both evaluators, local and --cloud modes
   preflight.py  credential check
   chat.py       terminal fallback with no JSON at the interrupt
-tests/test_support.py   18 offline checks, scripted models, no network
+tests/test_support.py   20 offline checks, scripted models, no network
 docs/
   DEMO.md       runbook, live evidence, Q&A, Slack draft
   FRICTION.md   friction and verification log
@@ -172,17 +172,20 @@ docs/
 ```sh
 uv sync --locked
 uv run python -m chinook_support.db
-uv run python -m unittest discover -s tests -v     # 18 tests, no API key needed
+uv run python -m unittest discover -s tests -v     # 20 tests, no API key needed
 
 # live
 lsof -ti :2024 | xargs kill 2>/dev/null            # a stale server keeps old keys
 uv run python scripts/preflight.py
 uv run langgraph dev --no-browser
+uv run python scripts/setup_studio.py             # idempotent; creates the named assistants
 ```
 
-Studio: open the printed URL, pick graph `support`, new thread, runtime context `{"customer_id": 1}`.
-Two named assistants exist with context baked in (`support — customer 1`, `support — customer 2`),
-which is more reliable than per-run context because identity then survives an interrupt resume.
+Studio: open the printed URL, pick graph `support`, then the **`support — customer 1`** assistant.
+It carries `{"customer_id": 1}` as runtime context, which survives an interrupt resume where a
+per-run context does not. Studio's input panel does not surface the context field, which is why the
+assistants exist; the dev server keeps them in memory, so rerun the script after restarting it.
+Switch customers with `support — customer 2` **and a new thread**.
 
 `.env` needs `OPENAI_API_KEY`, `OPENAI_MODEL=gpt-5.6`, `LANGSMITH_API_KEY`, `LANGSMITH_TRACING=true`,
 `LANGSMITH_PROJECT=chinook-support`. It is gitignored and keys are read only from that file.
@@ -215,9 +218,9 @@ These cost real time and will cost it again.
 
 ## What is done and what is not
 
-**Done:** build, 18 offline tests, three cloud experiments with a measured improvement, live Studio
-walkthrough covering every beat including approve and reject, human annotation review, friction log,
-repo pushed, Slack status posted.
+**Done:** build, 20 offline tests, baseline/candidate experiments with a measured improvement, live Studio
+walkthrough covering every beat including approve and reject, human annotation review recorded on
+three runs, friction log, repo pushed, Slack status posted.
 
 **Not done:** a timed 35-minute rehearsal. That is the only remaining item.
 

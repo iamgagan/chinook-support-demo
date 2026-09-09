@@ -286,9 +286,19 @@ def main():
         run = target(args.variant)
         for example in examples:
             outputs = run(example['inputs'])
-            scores = [check_case(example['inputs'], outputs, example['outputs']),
-                      judge_answer(example['inputs'], outputs, example['outputs'])]
-            report['results'].append({'case_id': example['inputs']['case_id'], 'outputs': outputs, 'scores': scores})
+            # Persist the executed run and its deterministic score before judging. The judge is a
+            # network call; if it fails, the agent has already run and may already have written a
+            # ticket, and that evidence must survive.
+            result = {'case_id': example['inputs']['case_id'], 'outputs': outputs,
+                      'scores': [check_case(example['inputs'], outputs, example['outputs'])]}
+            report['results'].append(result)
+            save_report(path, report)
+            try:
+                result['scores'].append(judge_answer(example['inputs'], outputs, example['outputs']))
+            except Exception as exc:
+                result['scores'].append({'key': 'answer_usefulness', 'score': None,
+                                         'comment': f'Judge unavailable: {type(exc).__name__}'})
+            scores = result['scores']
             save_report(path, report)
             print(example['inputs']['case_id'], *(f"{s['key']}={s['score']}" for s in scores), scores[0]['comment'])
             if outputs.get('error') and not outputs.get('authorization_error'):

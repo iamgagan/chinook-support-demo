@@ -278,6 +278,25 @@ with patch("dotenv.load_dotenv"), patch("dotenv.dotenv_values", return_value=loc
         self.assertNotIn('secret provider details', json.dumps(outputs))
         self.assertEqual(check_case(example['inputs'], outputs, example['outputs'])['score'], 0)
 
+    def test_local_evaluation_keeps_the_run_when_the_judge_fails(self):
+        """A judge outage must not erase an agent run that already executed and may have written."""
+        from scripts.evaluate import main
+        done = {'answer': 'No matches', 'tools': [], 'tickets': [{'invoice_id': 1, 'status': 'open'}]}
+        with patch('scripts.evaluate.db.ROOT', Path(self.temp.name)), \
+             patch.dict(os.environ, {'OPENAI_API_KEY': 'test-only-unused'}), \
+             patch('sys.argv', ['evaluate.py', '--case', 'no-inventory']), \
+             patch('builtins.print'), \
+             patch('scripts.evaluate.judge_answer', side_effect=RuntimeError('judge timeout')), \
+             patch('scripts.evaluate.target', return_value=Mock(return_value=done)):
+            main()
+        report = json.loads(next((Path(self.temp.name) / 'artifacts').glob('improved-*.json')).read_text())
+        self.assertEqual(len(report['results']), 1)
+        self.assertEqual(report['results'][0]['outputs']['tickets'], done['tickets'])
+        keys = {s['key']: s for s in report['results'][0]['scores']}
+        self.assertIn('scenario_check', keys)
+        self.assertIsNone(keys['answer_usefulness']['score'])
+        self.assertIn('RuntimeError', keys['answer_usefulness']['comment'])
+
     def test_cloud_evaluation_rejects_changed_dataset_with_same_size(self):
         from scripts.evaluate import verified_examples
         examples = [{'inputs': {'question': 'Invoice total'}, 'outputs': {'total': '8.91'}}]

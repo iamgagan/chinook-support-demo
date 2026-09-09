@@ -1,6 +1,6 @@
 # From a working chatbot to customer support you can trust
 
-**Status: build complete and measured. Agent, tools, middleware, 18 offline checks, Studio server, runbook, and three verified LangSmith experiments are saved. Deterministic checks pass 22/22 in every variant; the LLM-judge usefulness mean moved 0.905 to 0.971 after acting on judge feedback. Live Studio-server rehearsal covered recommendations, identity refusal, and both approval and rejection. A human annotation-queue review and a timed rehearsal remain. See [README.md](README.md) and [docs/DEMO.md](docs/DEMO.md).**
+**Status: build complete and measured. Agent, tools, middleware, 20 offline checks, Studio server, runbook, and three verified LangSmith experiments are saved. Deterministic checks pass 22/22 in every variant; the LLM-judge usefulness mean moved 0.905 to 0.971 after acting on judge feedback. Live Studio-server rehearsal covered recommendations, identity refusal, and both approval and rejection. A human annotation-queue review is recorded; a timed rehearsal remains. See [README.md](README.md) and [docs/DEMO.md](docs/DEMO.md).**
 
 Build and demonstrate a Chinook music-store support agent that helps customers discover music and resolve purchase questions—while protecting their information and keeping consequential actions under human control.
 
@@ -105,9 +105,9 @@ Use a real observed failure rather than manufacturing a success story. Report me
 - [x] Baseline and improved experiments use the same cases and comparable settings (same 22-case dataset `chinook-support-345f64fc3f`, `gpt-5.6`, `reasoning_effort=none`); only the candidate prompt differs.
 - [x] The app starts from documented setup and runs in Studio with tracing enabled (local server and cloud traces verified; live conversation, approval and rejection all exercised end to end).
 - [x] A real observed failure is diagnosed from a trace and the fix is measured (evaluator false negatives at 16/18, then judge-driven currency fix lifting usefulness 0.905 to 0.971).
-- [ ] A human review is recorded in the annotation queue. The queue holds 6 runs including a 3/5 case; only an operator judgement is missing and it must not be simulated.
+- [x] A human review is recorded in the annotation queue: operator scores and notes on `no-inventory`, `artist`, and `foreign-ticket` (the 3/5 case), all from a human source rather than the evaluators.
 - [ ] Timed 35-minute rehearsal.
-- [ ] Proposed-approach message posted to the assignment Slack channel (draft ready in docs/DEMO.md, not sent).
+- [x] Proposed-approach message posted to the assignment Slack channel.
 
 ## Presentation outline
 
