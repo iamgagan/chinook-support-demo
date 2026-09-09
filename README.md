@@ -157,6 +157,7 @@ Two evaluators run on every case. The deterministic `scenario_check` measures gr
 - [Approved plan](PLAN.md)
 - [Demo runbook, Q&A, and Slack draft](docs/DEMO.md)
 - [Friction and verification log](docs/FRICTION.md)
+- [Demo runbook](docs/RUNBOOK.md) — what to say and do, beat by beat, with expected output and recovery
 - [Handoff context and demo script](docs/HANDOFF.md) — one self-contained file: project state, verified numbers, and the spoken script. Paste it whole into another tool.
 - Standalone presentation pages in `docs/presentation/` — a glanceable cue sheet, a full promptbook, and an explorable [runtime architecture diagram](docs/presentation/runtime-architecture.html) (source spec alongside it)
 - Agent/tool/data code in `src/chinook_support/`; checks in `tests/test_support.py`.
