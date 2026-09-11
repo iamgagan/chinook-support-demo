@@ -1,5 +1,15 @@
 # Friction and verification log
 
+## Client recap · shown at 31:00 for two minutes
+
+| What was harder than expected | Mitigation in this demo | Implication for Chinook |
+| --- | --- | --- |
+| Supplying customer identity consistently through Studio approval/resume | Named assistants carry the runtime context | Derive production identity from authenticated sessions and authorize threads |
+| Raw approval input allowed malformed resume data to break a development thread | Prepared valid approve/reject payloads, a fresh-thread recovery, and a CLI fallback | Validate decisions before submission in a production review surface |
+| Evaluation code marked correct answers as failures | Inspected tool/answer traces, corrected normalization and empty-result handling, and added regression checks | Review the measurement against source evidence before changing the agent |
+
+These are recorded observations from the development versions used for this exercise. Demonstrate the working path; explain the lessons without reenacting failures. The entries below are chronological and include access failures that were subsequently resolved. For current evidence, use [DEMO.md](DEMO.md).
+
 ## Observed during implementation
 
 - **No starter code:** the authoritative worktree contained only the saved plan and review HTML. The implementation was built from that state.
@@ -30,7 +40,7 @@
   named recommendation quality and empty-catalog handling as the weaknesses. Both were false
   negatives from the evaluator: a typographic apostrophe (U+2019) defeating a literal substring
   match, and an empty tool result arriving as the string `"[]"` rather than a parsed list. The
-  agent was correct in both. This cost real time and is now the demo's main LangSmith story.
+  agent was correct in both. This cost real time and is retained as a short friction lesson and optional technical backup.
 - **Deterministic checks saturate, so they cannot rank two good prompts:** once the evaluator was
   correct, baseline and candidate both passed every case. Four harder cases were added to probe
   exactly what the candidate prompt claims to fix (implicit "unowned" phrasing, genre-vs-query
@@ -110,6 +120,6 @@ reproducible against `langgraph dev` 0.13.4 with `langgraph-api` in-memory runti
   to an unscored case. A regression test now reproduces the outage. The lesson is that an
   evidence-ordering guarantee needs a test, not a convention, or the next feature silently removes it.
 
-## Remaining evidence
+## Presentation readiness
 
-A live model conversation, live Studio review interactions, observed model failure, measured evaluation comparison, annotation review, and a timed rehearsal require working model and LangSmith access. Scripted-model tests validate control flow and data boundaries; they do not substitute for those live requirements.
+Recorded live conversations, experiments, and annotation review are indexed in [DEMO.md](DEMO.md). Its readiness section distinguishes newly checked behavior from historical evidence. A timed spoken rehearsal remains necessary; scripted-model tests alone do not establish live model quality.

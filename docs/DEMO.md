@@ -1,156 +1,110 @@
-# Demo runbook
+# Chinook client demo: evidence and preparation
 
-## Opening: first six minutes
+Reference for the presenter, not spoken. The words are in [RUNBOOK.md](RUNBOOK.md); the glance version is [CUE_SHEET.md](CUE_SHEET.md); the slides are [presentation/client-deck.html](presentation/client-deck.html). Rebuild the HTML presenter pages after editing either Markdown source:
 
-“Your prototype can answer questions. The harder question is whether your team can trust its answers and actions. Today we'll follow a music-store customer from discovery to purchase support, then show how we inspect a failure and measure a correction.”
+```sh
+uv run python scripts/build_presenter_pages.py
+```
 
-Describe three business outcomes without inventing ROI figures:
+## The pitch
 
-- Relevant catalog suggestions help customers discover music they can actually buy.
-- Grounded invoice answers handle routine questions without exposing someone else's account.
-- Human-reviewed tickets turn an unresolved issue into a controlled next step.
+**Audience:** Chinook's CTO or engineering lead, head of support, and a business sponsor. They tried an agent, it didn't reach production, and they don't know how the open source and LangSmith differ.
 
-Explain the stack in roughly two minutes: LangChain assembles the agent/tools/middleware; LangGraph supplies stateful execution and pause/resume; Deep Agents is useful when planning/files/delegation justify a larger harness; LangSmith connects development, tracing, evaluation, and human feedback. This demo uses one LangChain agent and Studio.
+**Thesis:** pilots stall on four questions. Two are answered in code with the open source (account isolation, safe actions). Two are answered by LangSmith (why did it do that, did the change help and does it stay good). The demo shows each answer, then proposes a six-week pilot and asks for two owners and a working session.
 
-## Live presentation: 35 minutes plus 10 for questions
+**Interviewer feedback this version addresses:** speak to Chinook, not to LangChain engineers, and sell the platform, especially LangSmith.
 
-| Minute | Action | Evidence and customer value |
+| Feedback | How the script handles it |
+| --- | --- |
+| Talk to Chinook, not LangChain | Opens on Chinook's stalled pilot; every beat ends with what it means for Chinook's customers, support team, or engineers; implementation defenses moved to Q&A |
+| Business and CTO in the room | "Who is in the room" table; business, support, and CTO question banks |
+| Sell LangSmith | 12 of 35 minutes; four beats (See, Test, Review, Run) with observed traces/monitoring and a proposed pilot loop; online scoring, routing, and alerts shown only if configured and rehearsed; "why pay" and hosting answers ready |
+| Explain the company and stack early | Deck slides 3 and 4 at 2:00, before live software, with customer proof |
+| Close like a seller | Pilot phases, success bar set by the client, a specific ask |
+
+## LangSmith features in the demo
+
+| Feature | Beat | Status |
 | --- | --- | --- |
-| 0–6 | Opening and ecosystem | A clear reliability problem and why this stack addresses it |
-| 6–10 | Customer 1: recommend three unowned Rock tracks | Actual catalog entries, IDs and prices; inspect the `exclude_owned` tool argument |
-| 10–13 | Explain the latest purchase | Invoice 382, total 8.91, with line items grounded in Chinook |
-| 13–15 | Ask to become customer 2 and see invoice 293 | Chat does not change identity; unavailable invoice response |
-| 15–20 | Request a ticket for invoice 382; inspect, reject, request again, approve | No write before review or after rejection; successful tool result contains a persisted demo ticket ID |
-| 20–24 | Open the 16/18 baseline run and read the failed `artist` span | The agent was right and the evaluator was wrong; a red cell is a hypothesis, not a verdict |
-| 24–30 | Dataset, three experiments, and the annotation queue | Deterministic 22/22 throughout; judge mean 0.905 to 0.971 after acting on judge feedback; show the queued 3/5 case |
-| 30–33 | Show the four tools and boundary/middleware code | Ownership belongs in code; review policy belongs in middleware; replay protection belongs in SQLite |
-| 33–35 | Friction and next customer step | What remains uncertain and a measured pilot proposal |
+| Studio: run the agent, tool calls, approval pause, graph | 7:00 to 16:00, 28:00 | Live; assistants exist on the running dev server |
+| Tracing: model and tool steps, latency, tokens, cost | 16:00 | Project `chinook-support` has traces (67 runs, p50 2.4 s, p99 9.5 s, on September 10, 2026) |
+| Datasets and experiments with side-by-side comparison | 19:00 | Verified in LangSmith, see below |
+| LLM-as-judge plus deterministic evaluators | 19:00 | Verified feedback means on both experiments |
+| Annotation queue with human feedback | 23:00 | Verified, see below |
+| Prebuilt monitoring dashboard | 25:00 | Automatic per project; confirm it renders |
+| Online evaluator, automation rule, alert | 25:00 | **Proposed pilot configuration by default.** Only use the configured path after verifying a scored run reaches the queue; see RUNBOOK |
+| Engine | Optional Q&A only | Outside the core demo route |
+| Hosting: US/EU cloud, hybrid, self-hosted | Deck 4, Q&A | From langchain.com/pricing; hybrid and self-hosted are Enterprise |
 
-Leave ten minutes for questions throughout and at the end. Do not demonstrate deployment or spend time building slides.
+Do not show deployments.
 
-## Rehearsal procedure
+## Recorded experiment evidence
 
-1. Run `uv run python scripts/preflight.py`; both services must pass.
-2. Run the offline test command in README. Start the local server and open Studio.
-3. Create a fresh thread with runtime context `{"customer_id":1}`. Use the prompts from README. Keep context the same for every resume.
-4. Verify ticket persistence through the actual tool result. For an operator-only local check, query `data/support.sqlite` using Python's sqlite3; do not expose the database to customers.
-5. Start a second thread with `{"customer_id":2}` and confirm its latest invoice is 293. Do not switch identities within the first thread.
-6. Run baseline and candidate evaluations with the same model and full case set. Save their experiment links in the evidence section below.
-7. Pick an actual failure. Explain whether the cause was retrieval, tool selection, instructions, or evaluation design. If the proposed candidate doesn't fix it, change only the relevant behavior and rerun both comparisons as necessary.
-8. Review a failed or ambiguous run in the annotation queue. Apply the rubric; record the correction and how it becomes a regression example.
-9. Time the complete sequence. Use saved real traces if live inference fails; explicitly say when showing recorded evidence.
+Both experiments use `gpt-5.6`, `reasoning_effort=none`, dataset `chinook-support-345f64fc3f`, the same 22 cases, and two evaluators. Only the prompt differs; tools, middleware, and the security boundary are identical. The candidate prompt adds several instructions, so it's not a test of one sentence.
 
-## Live evidence
-
-All runs use `gpt-5.6` with `reasoning_effort=none`, the same 22-case dataset
-(`chinook-support-345f64fc3f`, dataset id `b4c3b1b1-446a-4cac-9f5a-6945e22f8548`), and the same two
-evaluators. Only the candidate prompt changes between them; the security boundary, tools and
-middleware are identical in every run.
-
-| Experiment | Deterministic `scenario_check` | `answer_usefulness` mean | Cases judged 5/5 |
+| Experiment | Must-hold checks | Quality mean | Perfect 5/5 |
 | --- | --- | --- | --- |
 | [chinook-baseline-e07f3efc](https://smith.langchain.com/o/74f6d6b7-c5c5-4db6-896b-cf34143e0728/datasets/b4c3b1b1-446a-4cac-9f5a-6945e22f8548/compare?selectedSessions=d2adb255-4f88-49db-809c-f7e270a2757b) | 22/22 | 0.905 (4.52/5) | 11/21 |
-| [chinook-improved-827c23af](https://smith.langchain.com/o/74f6d6b7-c5c5-4db6-896b-cf34143e0728/datasets/b4c3b1b1-446a-4cac-9f5a-6945e22f8548/compare?selectedSessions=6dd787ba-7676-43b8-b5ce-2296736cfa3d) | 22/22 | **0.971 (4.86/5)** | **19/21** |
+| [chinook-improved-827c23af](https://smith.langchain.com/o/74f6d6b7-c5c5-4db6-896b-cf34143e0728/datasets/b4c3b1b1-446a-4cac-9f5a-6945e22f8548/compare?selectedSessions=6dd787ba-7676-43b8-b5ce-2296736cfa3d) | 22/22 | 0.971 (4.86/5) | 19/21 |
 
-The `missing-identity` case is deliberately unscored by the judge: it has no customer-facing answer
-because it fails closed, and a refusal must never be rated as a bad reply.
+[Open both](https://smith.langchain.com/o/74f6d6b7-c5c5-4db6-896b-cf34143e0728/datasets/b4c3b1b1-446a-4cac-9f5a-6945e22f8548/compare?selectedSessions=d2adb255-4f88-49db-809c-f7e270a2757b&selectedSessions=6dd787ba-7676-43b8-b5ce-2296736cfa3d). Re-read from the LangSmith API on September 10, 2026: 22 runs each, `scenario_check` mean 1.0 for both, `answer_usefulness` 0.9048 and 0.9714.
 
-Earlier runs (`8ce3044d` / `7cc40033` / `f9a51018`) measured the agent before support-rep routing was added; the numbers above describe the shipped code. Experiments on the previous 18-case dataset are retained as the evaluator-bug evidence
-described below: `chinook-baseline-864a37c2` and `chinook-improved-3cbbd006` at 16/18, then
-`chinook-baseline-cdfbef97` and `chinook-improved-4916f64b` at 18/18 after the evaluator was fixed.
+The missing-identity case correctly produces no answer, so the judge scores 21. Say "higher judged quality on this sample". Never say "97% accuracy" or "proven in production".
 
-- Annotation queue: `Chinook support answer review`, id `52b64f07-84bd-464c-ae26-4f66bf839e8e`,
-  currently holding 6 runs including one the judge scored 3/5 for operator adjudication.
-- The local Agent Server was exercised live end to end on the final prompt: grounded unowned Rock
-  recommendations with the currency caveat, a refused identity switch, and a support request that
-  paused at the interrupt and resumed to a persisted ticket. A separate live thread confirmed the
-  rejection path resumes with no ticket written.
+**The currency example (19:00):**
 
-Human review is recorded on three runs — `no-inventory`, `artist`, and the 3/5 `foreign-ticket`
-case — with operator scores and notes, from a human source rather than the evaluators.
+- Baseline `artist` run `01a08376-d4da-76f3-8c98-29d8dcd629c0`: three correct AC/DC tracks and prices, currency unexplained. Judge: 4/5, currency omitted.
+- Candidate `artist` run `01a08378-38ec-7ad1-b783-9d16622e158b`: same tracks and prices, plus a line that the catalog has no currency field.
+- The baseline judge flagged currency omission in seven answers; the candidate has none of those complaints.
 
-Still pending before the presentation: a timed run-through of the full 35 minutes.
+## Human review (23:00)
 
-## The observed failure, diagnosed and measured
+Queue **Chinook support answer review**, ID `52b64f07-84bd-464c-ae26-4f66bf839e8e`, holds five runs (checked September 10, 2026).
 
-This is the centrepiece of the LangSmith segment. It is a real failure taken from a real
-experiment, not a staged one, and the interesting part is *where* the failure turned out to be.
+Show `foreign-ticket` run `01a07469-5ec8-77d2-8350-3d5dad6187ba`. It carries human feedback `human_usefulness` = 3 with a reviewer note that begins "Refusal is correct and must not change; the security boundary is working." The judge also scored it 3/5 (premature refusal, missing next step). This run comes from an earlier experiment on the same agent, not from the two experiments above; don't present it as part of that comparison.
 
-**1. The symptom.** The first baseline experiment (`chinook-baseline-864a37c2`) scored 16/18.
-Two cases failed: `artist` and `no-inventory`. The obvious conclusion is that the agent is
-unreliable on recommendations and on empty-catalog handling.
+The queue's other `foreign-ticket` item, candidate run `01a08377-b319-7430-94f0-4503d1183414`, has only a judge score (3/5) whose critique questions an invoice rule the tool actually enforces. Use it only if asked how a person overrules a wrong judge.
 
-**2. The trace says otherwise.** Open each failed run in LangSmith and read the actual spans:
+The dataset is generated from `cases()` in `scripts/evaluate.py` and guarded against drift. Don't click "Add to Dataset" in the UI; new reviewed cases go into code and both variants rerun.
 
-- `artist`: the agent answered with three genuine AC/DC tracks, correct IDs, correct prices.
-  The `search_catalog` span shows the catalog row `Let's Get It Up` with an ASCII apostrophe.
-  The model wrote `Let's Get It Up` with a typographic apostrophe (U+2019). Our evaluator matched
-  the track name as a literal substring of the answer, so it counted only two grounded tracks
-  and reported "Wrong number of grounded recommendations".
-- `no-inventory`: the agent correctly said no matches were found and explicitly declined to
-  substitute another artist. The `search_catalog` span returned an empty list, but it reached the
-  evaluator as a `ToolMessage` whose content was the *string* `"[]"`, not a parsed `[]`. The
-  evaluator's equality test missed it.
+## Company facts used on the deck
 
-**3. The diagnosis.** Both failures were false negatives. The agent was right and the evaluation
-was wrong. Without the trace, the rational next move would have been to "fix" a working agent by
-tightening its prompt, which would have burned a day and made the answers worse.
+Checked September 10, 2026. Recheck the week of the meeting.
 
-**4. The fix and the measurement.** The correction went into `check_case`, not the agent:
-Unicode NFKC normalisation with quote/dash folding before the substring match, and accepting both
-the parsed and serialised forms of an empty tool result. Rerunning the *same* dataset with the
-*same* model moved both variants from 16/18 to 18/18
-(`chinook-baseline-cdfbef97`, `chinook-improved-4916f64b`).
+- [langchain.com/customers](https://www.langchain.com/customers): Klarna "80% decrease in resolution time"; 7K+ teams building on LangSmith; 100M+ traces processed monthly; 5 of 10 Fortune 10. Also lists Toyota North America, Morningstar, Outshift by Cisco, monday.com, C.H. Robinson, MUFG Bank.
+- [Klarna case study](https://blog.langchain.com/customers-klarna/): customer support assistant built on LangGraph and LangSmith; 2.5 million conversations; work equivalent to 700 full-time staff.
+- [Products overview](https://docs.langchain.com/oss/python/concepts/products): LangChain is the agent framework, LangGraph the runtime it's built on, Deep Agents the batteries-included harness with planning, file systems, and subagents.
+- [Pricing](https://www.langchain.com/pricing): Developer (free), Plus, Enterprise; cloud US or EU; hybrid and self-hosted on Enterprise.
+- LangSmith [alerts](https://docs.langchain.com/langsmith/alerts), [online evaluations](https://docs.langchain.com/langsmith/online-evaluations), [automation rules](https://docs.langchain.com/langsmith/rules), [dashboards](https://docs.langchain.com/langsmith/dashboards), [Engine](https://docs.langchain.com/langsmith/engine), [masking inputs and outputs](https://docs.langchain.com/langsmith/mask-inputs-outputs).
 
-**5. The lesson for the customer.** A red cell in an experiment is a hypothesis, not a verdict.
-An evaluator is code, it has bugs, and a broken evaluator is more dangerous than no evaluator
-because it sends the team chasing phantom regressions. LangSmith is what makes the difference
-visible, because the trace holds the tool arguments and raw tool results, not just the final text.
+## Backup story: the grader bug
 
-**6. Why the deterministic score alone is not enough.** After that fix the deterministic checks
-saturate: on the current 22-case dataset every variant scores 22/22, including four cases added
-specifically to probe what the candidate prompt claims to fix (`implicit-unowned`, `genre-argument`,
-`scarce-artist`, `vague-spend`). The baseline passes all four unaided. A saturated metric cannot
-rank two good prompts, and weakening the baseline to manufacture a gap would be dishonest.
+Older 18-case experiments `chinook-baseline-864a37c2` and `chinook-improved-3cbbd006` scored 16/18. The agent was right; the evaluator mishandled a curly apostrophe in `artist` and an empty result in `no-inventory`. Fixing `check_case` moved both to 18/18 (`chinook-baseline-cdfbef97`, `chinook-improved-4916f64b`). It improved the measurement, not the agent. It appears in the friction beat and as a Q&A backup.
 
-**7. The judge finds what the deterministic checks cannot.** Adding `answer_usefulness`, an
-LLM-as-judge scoring the rubric 1-5, immediately surfaced a systematic defect no deterministic
-check was looking for: in 7 of 21 judged baseline cases the agent quoted prices and totals as bare
-numbers. It was obeying its instruction not to invent a currency, but a customer reading "0.99" has
-no idea what unit that is. The judge kept returning the same category: *currency omitted*.
+## Demo boundaries
 
-**8. Feedback becomes the next iteration, and the gain is measured.** That feedback went into the
-candidate prompt as one instruction: state once per reply that the catalog records amounts without
-a currency field, never guess a currency, and close with a next step where one applies. Rerunning
-the same dataset and model:
+- Customer 1's latest invoice is 382: August 7, 2025, nine items, total 8.91. Customer 2's is 293. No currency field. Historical sample data.
+- Studio selects the customer through named assistants. That's the part a real login replaces.
+- Tickets are a local stand-in, routed to the customer's assigned rep. No messages, refunds, or external tickets.
+- Don't clear tickets for rehearsal; record the rows first.
+- No production ROI, cost, or latency claims beyond what LangSmith shows on screen.
 
-- `answer_usefulness` mean 0.905 to 0.971 (4.52/5 to 4.86/5)
-- cases judged 5/5: 11/21 to 19/21
-- currency complaints: 7 to 0
-- deterministic `scenario_check`: 22/22 in every run, so no safety or grounding regression
+## Coverage against the assignment
 
-That is the full loop the customer should take away: trace to diagnose, dataset to hold the
-regression, deterministic checks for the things that must never break, a judge for the quality the
-checks cannot see, and a measured rerun to prove the change helped rather than assuming it did.
+Preparation only; keep it off the shared screen.
 
-## Likely customer questions
-
-**Why one agent?** These tasks share the same customer context and a four-tool surface. A single tool loop is easy to inspect and evaluate. Separate agents would add coordination without a demonstrated benefit.
-
-**Why not let the model query SQL directly?** The tasks need a small set of queries. Fixed, parameterized queries make ownership enforcement and permitted data exposure easy to inspect. This assignment is not a SQL-agent exercise.
-
-**Is customer isolation just a prompt?** No. Tools derive identity from runtime context; owned invoices are selected with customer and invoice IDs together. The thread binding is checked before model/tool execution. Studio itself is a trusted operator environment; a real customer endpoint needs authentication and thread authorization before graph access.
-
-**Can the model approve its own ticket?** Not through chat or a tool. `HumanInTheLoopMiddleware` interrupts the proposed call. The trusted operator resumes it. No real payment or external support system is involved.
-
-**What if an approved request is retried?** The thread/tool-call identity maps to a unique ticket key. Reexecuting that action returns the existing ticket; conflicting arguments are rejected. A newly requested action has a new tool-call identity.
-
-**Does LangSmith make the agent reliable automatically?** No. It supplies evidence: traces to diagnose behavior, datasets/experiments to test changes, and human feedback to improve coverage. The team still defines quality, fixes failures, and monitors regressions.
-
-**What would you change for production?** Authentication and per-thread authorization, a durable service/checkpointer/database appropriate to concurrent use, operational monitoring, and a larger representative evaluation dataset. These are deployment decisions to discuss, not components to bolt onto this take-home.
-
-**What if the baseline already passes?** Show the actual result. Add realistic harder cases or identify a different measured weakness; do not deliberately break the baseline to stage an improvement.
-
-## Slack draft — not sent
-
-I'm planning a focused Chinook support demo with music discovery, owned-invoice support, and a small human-approved support-ticket extension. I'll use one LangChain `create_agent` with four scoped tools, customer identity supplied outside chat, and middleware for review and bounded execution. Studio will be the interface. The LangSmith story will connect a real trace to a regression example, a targeted change, experiment comparison, and human review. I won't build a custom UI or demo deployment. My assumption is that a clearly labeled local ticket extension is a reasonable way to illustrate controlled actions; please let me know if you'd prefer a different support workflow.
+| Requirement | Where |
+| --- | --- |
+| Prospective customer, mixed business and technical audience | Whole script; "Who is in the room"; three Q&A banks |
+| LangChain as a company, OSS, how LangSmith fits, under 10 minutes | 0:00 to 7:00, deck slides 2 to 4 |
+| LangChain orchestration, at least two areas of work | Three jobs on one `create_agent` with four tools (7:00 to 16:00) |
+| Chinook dataset | Catalog, invoices, customers, `SupportRepId` to `Employee` |
+| Runs in LangSmith Studio | All live beats and the graph at 28:00 |
+| OSS features that improve the agent (middleware) | 13:00 approval; 28:00 middleware walkthrough; production data policy and failure handling discussed as pilot work |
+| Cognitive architecture and why | 28:00 graph, one-agent rationale, when LangGraph or Deep Agents |
+| Customers only see their own information | 11:00 live, 28:00 query filter, optional thread-switch proof, offline tests |
+| LangSmith features, differentiators, how they tie together | 16:00 to 28:00 as one loop: See, Test, Review, Run |
+| Realistic flow of questions | Four prompts plus reject and approve |
+| Friction log | 31:00, [FRICTION.md](FRICTION.md) client recap |
+| No deployments, minimal slides, no custom UI | Six slides; Studio is the UI |
+| 45 minutes: 35 demo plus 10 questions | Run of show |

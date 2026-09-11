@@ -75,7 +75,7 @@ Send it to `POST /threads/{thread_id}/runs/wait` after `POST /threads` creates t
 
 The pinned dataset gives customer 1 invoice **382**, dated **2025-08-07**, total **8.91**; customer 2's latest invoice is **293**, total **0.99**. Chinook does not specify currency. These dates are dataset facts, not current transactions.
 
-At the ticket interrupt, Studio's review panel supports **approve** or **reject**. For a manual resume, send this command with the same thread and context:
+At the ticket interrupt, Studio shows a raw resume field pre-filled with `""`. Replace its entire contents; submitting the placeholder breaks the thread. Approve with:
 
 ```json
 {"decisions": [{"type": "approve"}]}
@@ -155,12 +155,14 @@ Two evaluators run on every case. The deterministic `scenario_check` measures gr
 
 - [Original assignment, transcribed](docs/ASSIGNMENT.md)
 - [Approved plan](PLAN.md)
-- [Demo runbook, Q&A, and Slack draft](docs/DEMO.md)
+- [Chinook client demo script](docs/RUNBOOK.md): the 35-minute customer pitch, LangSmith setup, question bank, and recovery
+- [Client deck](docs/presentation/client-deck.html): six slides for the opening and the pilot close
+- [Cue sheet](docs/CUE_SHEET.md): one-page glance version
+- [Demo evidence and preparation](docs/DEMO.md): recorded experiments, run IDs, sourced company facts, coverage against the assignment
 - [Friction and verification log](docs/FRICTION.md)
-- [Architecture and runtime](docs/ARCHITECTURE.md) — what the pieces are, what happens on a request, and why each control sits where it does
-- [Demo runbook](docs/RUNBOOK.md) — what to say and do, beat by beat, with expected output and recovery
-- [Handoff context and demo script](docs/HANDOFF.md) — one self-contained file: project state, verified numbers, and the spoken script. Paste it whole into another tool.
-- Standalone presentation pages in `docs/presentation/` — a glanceable cue sheet, a full promptbook, and an explorable [runtime architecture diagram](docs/presentation/runtime-architecture.html) (source spec alongside it)
+- [Architecture and runtime](docs/ARCHITECTURE.md): what the pieces are, what happens on a request, and why each control sits where it does
+- [Handoff context](docs/HANDOFF.md): project state and recorded verification
+- `docs/presentation/promptbook.html` and `cue-sheet.html` are generated from the two Markdown scripts by `uv run python scripts/build_presenter_pages.py` (needs pandoc); the [runtime architecture diagram](docs/presentation/runtime-architecture.html) has its source spec alongside it
 - Agent/tool/data code in `src/chinook_support/`; checks in `tests/test_support.py`.
 
 Verified: preflight, live Agent Server conversations with approval and rejection, baseline/candidate experiments on one dataset, a measured improvement in judged answer usefulness with no deterministic regression, and human review recorded in the annotation queue.

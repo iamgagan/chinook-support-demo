@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chinook support agent · client deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600;800&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
+<style>
+  :root{
+    --paper:#FCFAF6; --card:#FFFFFF; --sunk:#F1EEE7;
+    --ink:#14181A; --ink-soft:#3F484C; --ink-faint:#78838A;
+    --rule:#E0DAD0; --rule-firm:#C3BBAE;
+    --green:#1B6B57; --green-wash:#E4EFE9;
+    --blue:#28577F; --blue-wash:#E2EAF2;
+  }
+  *{box-sizing:border-box}
+  html{scroll-snap-type:y mandatory;scroll-behavior:smooth}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:"Libre Franklin","Helvetica Neue",Arial,sans-serif}
+  .slide{position:relative;min-height:100vh;scroll-snap-align:start;display:flex;align-items:center;
+    padding-block:7vh;padding-inline:clamp(16px,6vw,96px);border-bottom:1px solid var(--rule)}
+  .inner{width:100%;max-width:1180px;margin:0 auto;min-width:0}
+  .kicker{font-size:.78rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--green);margin:0 0 18px}
+  h1{font-weight:800;font-size:clamp(2.2rem,5.2vw,4.3rem);line-height:1.04;letter-spacing:-.025em;margin:0 0 20px;max-width:17ch}
+  h2{font-weight:800;font-size:clamp(1.7rem,3.5vw,2.9rem);line-height:1.1;letter-spacing:-.02em;margin:0 0 32px;max-width:26ch}
+  .lede{font-family:Newsreader,Georgia,serif;font-size:clamp(1.1rem,1.7vw,1.45rem);line-height:1.5;color:var(--ink-soft);max-width:46ch;margin:0}
+  .pg{position:absolute;right:clamp(16px,4vw,48px);bottom:18px;font-size:.78rem;color:var(--ink-faint);font-variant-numeric:tabular-nums}
+  .src{font-size:.78rem;color:var(--ink-faint);margin:28px 0 0}
+  .tag{display:inline-block;font-size:.72rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:4px 9px;border-radius:2px}
+  .tag.oss{background:var(--green-wash);color:var(--green)}
+  .tag.ls{background:var(--blue-wash);color:var(--blue)}
+
+  /* 1 · title */
+  .title{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:clamp(24px,5vw,72px);align-items:end}
+  .agenda{list-style:none;margin:0;padding:0;border-top:2px solid var(--ink)}
+  .agenda li{display:grid;grid-template-columns:3.2rem minmax(0,1fr);gap:12px;padding:13px 0;border-bottom:1px solid var(--rule);font-size:1.05rem}
+  .agenda span{color:var(--ink-faint);font-variant-numeric:tabular-nums;font-weight:600}
+
+  /* 2 · four questions */
+  .quad{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+  .q{background:var(--card);border:1px solid var(--rule);border-radius:4px;padding:26px 26px 22px;display:flex;flex-direction:column;gap:18px;min-width:0}
+  .q p{font-family:Newsreader,Georgia,serif;font-size:clamp(1.2rem,2vw,1.6rem);line-height:1.3;margin:0}
+  .q small{font-size:.9rem;color:var(--ink-soft)}
+  .q.ls{border-top:4px solid var(--blue)} .q.oss{border-top:4px solid var(--green)}
+
+  /* 3 · company */
+  .proof{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:clamp(24px,5vw,64px);align-items:start}
+  .big{font-weight:800;font-size:clamp(4rem,11vw,9rem);line-height:.9;letter-spacing:-.04em;color:var(--green);margin:0}
+  .big-cap{font-family:Newsreader,Georgia,serif;font-size:clamp(1.1rem,1.7vw,1.4rem);color:var(--ink-soft);margin:14px 0 0;max-width:30ch}
+  .stats{list-style:none;margin:0;padding:0;border-top:2px solid var(--ink)}
+  .stats li{padding:16px 0;border-bottom:1px solid var(--rule);display:flex;gap:16px;align-items:baseline;flex-wrap:wrap}
+  .stats b{font-size:clamp(1.6rem,2.8vw,2.3rem);font-weight:800;letter-spacing:-.02em;min-width:5.5ch}
+  .stats span{color:var(--ink-soft)}
+  .names{margin:22px 0 0;color:var(--ink-soft);font-weight:600;line-height:1.8}
+
+  /* 4 · stack */
+  .band{border-radius:4px;padding:20px;min-width:0}
+  .band.ls{background:var(--blue-wash)} .band.oss{background:var(--green-wash)}
+  .band-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px 18px;flex-wrap:wrap;margin-bottom:14px}
+  .band-head h3{margin:0;font-size:1.25rem;font-weight:800}
+  .band-head .note{font-size:.88rem;color:var(--ink-soft)}
+  .cols{display:grid;gap:12px}
+  .cols.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .cols.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .box{background:var(--card);border-radius:3px;padding:14px 16px;min-width:0}
+  .box b{display:block;font-size:1.02rem;margin-bottom:4px}
+  .box span{font-size:.88rem;color:var(--ink-soft);line-height:1.45;display:block}
+  .box.wide{margin-top:12px}
+  .flow{display:flex;justify-content:center;align-items:center;gap:10px;padding:12px 0;font-size:.86rem;font-weight:600;color:var(--ink-faint)}
+  .flow::before,.flow::after{content:"";height:1px;flex:1;max-width:160px;background:var(--rule-firm)}
+
+  /* 5 · what we built */
+  .jobs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border-top:2px solid var(--ink)}
+  .job{padding:22px 22px 22px 0;min-width:0}
+  .job + .job{padding-left:22px;border-left:1px solid var(--rule)}
+  .job i{font-style:normal;font-weight:800;font-size:.85rem;color:var(--green)}
+  .job h3{font-size:1.4rem;font-weight:800;margin:6px 0 10px}
+  .job q{display:block;font-family:Newsreader,Georgia,serif;font-size:1.15rem;color:var(--ink-soft);margin:0 0 12px}
+  .job p{margin:0;font-size:.95rem;color:var(--ink-soft);line-height:1.5}
+  .rules{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:22px}
+  .rule{background:var(--ink);color:var(--paper);border-radius:3px;padding:16px 20px;font-weight:600;font-size:1.05rem}
+  .facts{margin:18px 0 0;color:var(--ink-faint);font-size:.92rem;font-weight:600}
+
+  /* 6 · pilot */
+  .phases{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+  .phase{border-top:4px solid var(--green);background:var(--card);padding:18px 20px;border-radius:0 0 3px 3px;min-width:0}
+  .phase:nth-child(2){border-color:var(--blue)} .phase:nth-child(3){border-color:var(--ink)}
+  .phase i{font-style:normal;font-size:.8rem;font-weight:800;color:var(--ink-faint);letter-spacing:.06em;text-transform:uppercase}
+  .phase h3{margin:6px 0 8px;font-size:1.2rem}
+  .phase p{margin:0;font-size:.93rem;color:var(--ink-soft);line-height:1.5}
+  .pilot-foot{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(18px,4vw,48px);margin-top:28px}
+  .pilot-foot h3{font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 10px}
+  .pilot-foot ul{margin:0;padding-left:1.1em;line-height:1.7;color:var(--ink-soft)}
+  .ask{background:var(--green);color:#fff;border-radius:4px;padding:20px 22px}
+  .ask h3{color:#D6EBE3}
+  .ask p{margin:0;font-family:Newsreader,Georgia,serif;font-size:1.3rem;line-height:1.4}
+
+  @media (max-width:820px){
+    .title,.proof,.pilot-foot,.rules{grid-template-columns:minmax(0,1fr)}
+    .quad,.cols.four,.cols.two,.jobs,.phases{grid-template-columns:minmax(0,1fr)}
+    .job,.job + .job{padding:18px 0;border-left:0;border-bottom:1px solid var(--rule)}
+    html{scroll-snap-type:none}
+  }
+  @media print{.slide{break-after:page;min-height:auto}}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style></head>
+<body>
+
+<section class="slide" id="s1" aria-label="Slide 1">
+  <div class="inner title">
+    <div>
+      <p class="kicker">Chinook × LangChain</p>
+      <h1>A clear path to a reliable support agent</h1>
+      <p class="lede">A focused pilot using Chinook's sample catalog, invoices, and support assignments.</p>
+      <p class="src" style="font-size:.95rem;font-weight:600;color:var(--ink-soft)">Presented by Gagandeep Singh · Deployed Engineer, LangChain</p>
+    </div>
+    <ol class="agenda">
+      <li><span>7 min</span>Your priorities, our stack, and the three workflows</li>
+      <li><span>9 min</span>The agent, live</li>
+      <li><span>12 min</span>LangSmith: see, test, review, run</li>
+      <li><span>3 min</span>How it's built</li>
+      <li><span>2 min</span>What we learned</li>
+      <li><span>2 min</span>A pilot proposal</li>
+    </ol>
+  </div>
+  <span class="pg">1 / 6</span>
+</section>
+
+<section class="slide" id="s2" aria-label="Slide 2">
+  <div class="inner">
+    <p class="kicker">Why support agents stall</p>
+    <h2>Four questions before your next pilot.</h2>
+    <div class="quad">
+      <div class="q oss"><p>Can a customer ever see someone else's account?</p><div><span class="tag oss">Open source</span> <small>enforced in code, not the prompt</small></div></div>
+      <div class="q oss"><p>Can we let it take an action?</p><div><span class="tag oss">Open source</span> <small>approval gate, pause and resume</small></div></div>
+      <div class="q ls"><p>When an answer is wrong, why?</p><div><span class="tag ls">LangSmith</span> <small>every step traced</small></div></div>
+      <div class="q ls"><p>Did our change help, and does it stay good after launch?</p><div><span class="tag ls">LangSmith</span> <small>testing, expert review, monitoring</small></div></div>
+    </div>
+  </div>
+  <span class="pg">2 / 6</span>
+</section>
+
+<section class="slide" id="s3" aria-label="Slide 3">
+  <div class="inner">
+    <p class="kicker">LangChain</p>
+    <h2>The open source for building agents, and the platform for running them well</h2>
+    <div class="proof">
+      <div>
+        <p class="big">80%</p>
+        <p class="big-cap">reduction in average resolution time reported for Klarna's assistant, built on LangGraph and LangSmith.</p>
+      </div>
+      <div>
+        <ul class="stats">
+          <li><b>7K+</b><span>teams building on LangSmith</span></li>
+          <li><b>100M+</b><span>traces processed a month</span></li>
+          <li><b>5 of 10</b><span>of the Fortune 10</span></li>
+        </ul>
+        <p class="names">Klarna · Cisco · Toyota North America · Morningstar · monday.com · C.H. Robinson · MUFG</p>
+      </div>
+    </div>
+    <p class="src">Figures as published at langchain.com/customers and in the Klarna case study, checked September 2026.</p>
+  </div>
+  <span class="pg">3 / 6</span>
+</section>
+
+<section class="slide" id="s4" aria-label="Slide 4">
+  <div class="inner">
+    <p class="kicker">How the pieces fit</p>
+    <h2>Build with open source. Improve and operate with LangSmith.</h2>
+    <div class="band ls">
+      <div class="band-head"><h3>LangSmith <span class="tag ls">Commercial platform</span></h3><span class="note">Any framework · US/EU cloud · hybrid/self-hosted on Enterprise</span></div>
+      <div class="cols four">
+        <div class="box"><b>See</b><span>Tracing and Studio: every model call, tool call, cost, and delay</span></div>
+        <div class="box"><b>Test</b><span>Datasets and experiments: compare versions on the same cases</span></div>
+        <div class="box"><b>Review</b><span>Annotation queues: your experts grade answers</span></div>
+        <div class="box"><b>Run</b><span>Operating visibility; online scoring and alerts configured for the pilot</span></div>
+      </div>
+    </div>
+    <div class="flow">traces, scores, and feedback</div>
+    <div class="band oss">
+      <div class="band-head"><h3>Open source <span class="tag oss">Free · MIT</span></h3><span class="note">Your infrastructure · multiple model providers</span></div>
+      <div class="cols two">
+        <div class="box"><b>LangChain</b><span>The agent: model plus your tools, with middleware for rules that must always hold</span></div>
+        <div class="box"><b>Deep Agents</b><span>Long, multi-step work: planning, working files, sub-agents</span></div>
+      </div>
+      <div class="box wide"><b>LangGraph</b><span>The runtime underneath both: remembers state, so an agent can pause for a person and resume exactly where it stopped</span></div>
+    </div>
+  </div>
+  <span class="pg">4 / 6</span>
+</section>
+
+<section class="slide" id="s5" aria-label="Slide 5">
+  <div class="inner">
+    <p class="kicker">What we built for Chinook</p>
+    <h2>Three jobs done reliably beat fifteen done sometimes</h2>
+    <div class="jobs">
+      <div class="job"><i>01</i><h3>Find music</h3><q>Recommend Rock tracks I don't already own.</q><p>Real catalog, owned tracks excluded. Measure discovery and conversion.</p></div>
+      <div class="job"><i>02</i><h3>Explain a purchase</h3><q>What's on my latest invoice?</q><p>Invoice-backed answers. Measure correct resolution and repeat contacts.</p></div>
+      <div class="job"><i>03</i><h3>Escalate with approval</h3><q>My download is missing.</q><p>Drafts a ticket, a person approves, it goes to the customer's assigned rep.</p></div>
+    </div>
+    <div class="rules">
+      <div class="rule">Account tools enforce customer ownership</div>
+      <div class="rule">Support-ticket creation requires approval</div>
+    </div>
+    <p class="facts">1 agent · 4 tools · 5 middleware · fixed queries, identity supplied outside model control</p>
+  </div>
+  <span class="pg">5 / 6</span>
+</section>
+
+<section class="slide" id="s6" aria-label="Slide 6">
+  <div class="inner">
+    <p class="kicker">Proposed pilot</p>
+    <h2>Six weeks to a decision based on your own conversations</h2>
+    <div class="phases">
+      <div class="phase"><i>Weeks 1 to 2</i><h3>Connect and measure</h3><p>Login, invoices, and helpdesk wired to the four tools. A test set from a few hundred real past conversations.</p></div>
+      <div class="phase"><i>Weeks 3 to 4</i><h3>Shadow mode</h3><p>The agent drafts, your staff decide what is sent. Configure scoring and human review.</p></div>
+      <div class="phase"><i>Weeks 5 to 6</i><h3>Launch decision</h3><p>Limited release only if agreed quality, access, privacy, and operating checks pass. Otherwise continue shadow mode.</p></div>
+    </div>
+    <div class="pilot-foot">
+      <div>
+        <h3>The bar, set by you before we start</h3>
+        <ul>
+          <li>Purchase questions resolved without a person</li>
+          <li>Quality score on your test set</li>
+          <li>Zero cross-account access in testing</li>
+          <li>Cost per resolved conversation</li>
+        </ul>
+      </div>
+      <div class="ask">
+        <h3>The ask</h3>
+        <p>A support owner, an engineering owner, and a working session next week to pick the test conversations and set the bar.</p>
+      </div>
+    </div>
+  </div>
+  <span class="pg">6 / 6</span>
+</section>
+
+<script>
+  const slides = [...document.querySelectorAll('.slide')];
+  const current = () => slides.reduce((at, s, i) => s.getBoundingClientRect().top <= innerHeight / 2 ? i : at, 0);
+  addEventListener('keydown', e => {
+    const step = {ArrowRight: 1, ArrowDown: 1, PageDown: 1, ' ': 1, ArrowLeft: -1, ArrowUp: -1, PageUp: -1}[e.key];
+    if (!step) return;
+    e.preventDefault();
+    slides[Math.max(0, Math.min(slides.length - 1, current() + step))].scrollIntoView();
+  });
+</script>
+</body></html>
